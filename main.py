@@ -8,8 +8,8 @@ def spawn_drones_graph():
     g = ig.Graph.Full(n=20)
 
     ##assign location (coordinates)
-    layout = g.layout(layout='auto')
-    coords_subgraph = layout[:10]
+    layout = g.layout(layout='auto',dim=3)
+    coords_subgraph = layout[:20]
     print(coords_subgraph)
     
     ##view graph
