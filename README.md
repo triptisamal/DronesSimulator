@@ -1,4 +1,4 @@
 # Drones Simulator
 
-##Installation
-###Python igraph: pip install python-igraph
+## Installation
+* Python igraph: pip install python-igraph
