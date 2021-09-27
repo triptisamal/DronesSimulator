@@ -1,9 +1,16 @@
-import igraph as ig
-import random
 from collections import deque
-
+from petal import *
+import globalvars
 
 ##global data structures
+#pos = []
+#e = 0.6
+#focus1_key=0
+#focus2_key=0
+#a=0
+#b=0
+#c=0
+
 packet = {
             'pID':0,    #packet ID
             'dLoc':(0,0,0),   #destination location
@@ -12,7 +19,7 @@ packet = {
             'myLoc':(0,0,0), #my location 
             
             #petal parameters 
-            'eccentricity':0.5, #of the major axis plane (?)
+            'eccentricity':0.6, #of the segment corresponding to orbital eccentricity 
 
             #back off time parameters
             'tUB1':0.002, #seconds;tB1 -> back-off time proportional to the distance from destination. 
@@ -39,6 +46,7 @@ def wireless_handler():
        Input(s): wireless range, position of nodes
        
        '''
+    print(globalvars.pos)
 
 def node_handler():
     '''This handles everything that a node is supposed to do:
@@ -51,40 +59,41 @@ def node_handler():
         NOTE: memory for each node will be separate, maintained by the simulator'''
 
 
-def spawn_drones_graph():
 
-    global coords_subgraph
-    print("Creating drones network")
-
-    ##TODO Read from file specifications for graph
-    total_number_of_nodes = 5
-    total_number_of_edges = 5
-
-    ##create fully connected graph 
-    g = ig.Graph(n=total_number_of_nodes)
-    adj = []
-    adj = g.get_adjacency()
-    print("Adjacency matrix": adj)
-    ##assign location (coordinates)
-    layout = g.layout(layout='auto',dim=3)
-    coords_subgraph = layout[:total_number_of_nodes]
-
-    drone_ids = []
-    drone_ids = [0 for i in range(total_number_of_nodes)] 
-    for i in range(len(coords_subgraph)):
-        drone_ids[i] = i
-        print("Drone ",drone_ids[i],": ",coords_subgraph[i])
-    
-    
-    ##view graph
-    ig.plot(g)
 
 
 def main():
     
     '''Simulation engine'''
+    
+    globalvars.init()
     create_drones_network()
-    add_event("BROADCAST",src)
+    globalvars.focus1_key = random.choice(range(len(globalvars.pos)))
+    print(globalvars.focus1_key)
+    while True:
+        globalvars.focus2_key = random.choice(range(len(globalvars.pos)))
+        if globalvars.focus1_key != globalvars.focus2_key:
+            break
+    
+
+    print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
+    print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
+
+
+    ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
+    focaldist = math.sqrt(ff)
+    print("Distance between two foci =", focaldist)
+    print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
+
+    print("Orbital eccentricity:",globalvars.e)
+    #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
+    globalvars.a = focaldist/globalvars.e
+    print("Semi major axis, a = ", globalvars.a)
+    globalvars.b = globalvars.a * math.sqrt(1-globalvars.e*globalvars.e)
+    print("Semi minor axis, b = ", globalvars.b)
+    globalvars.c = random.uniform(globalvars.b,1)
+    print("c = ",globalvars.c)
+    add_event("BROADCAST")
 
 if __name__=="__main__":
     main()
