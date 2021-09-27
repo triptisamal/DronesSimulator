@@ -23,9 +23,6 @@ def insideOrNot(x,y,z):
     h= (pos[focus1_key][0]+pos[focus2_key][0])/2
     k= (pos[focus1_key][1]+pos[focus2_key][1])/2
     f= (pos[focus1_key][2]+pos[focus2_key][2])/2
-    print(a)
-    print(b)
-    print(c)
     sol = (x-h)*(x-h)/(a*a) + (y-k)*(y-k)/(b*b) + (x-f)*(x-f)/(c*c)
     #semi axes are of lengths a, b, c
     return sol
@@ -127,18 +124,18 @@ def main():
     print("Distance between two foci =", focaldist)
     print("Centre of ellipsoid = (", (pos[focus1_key][0]+pos[focus2_key][0])/2,",",(pos[focus1_key][1]+pos[focus2_key][1])/2,",",(pos[focus1_key][2]+pos[focus2_key][2])/2,")")
 
-    print("Meridional eccentricity:",e)
+    print("Orbital eccentricity:",e)
     #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
     a = focaldist/e
     print("Semi major axis, a = ", a)
     b = a * math.sqrt(1-e*e)
     print("Semi minor axis, b = ", b)
-    c = b-5
+    c = random.uniform(b,1)
     print("c = ",c)
 
     
 
-    ret = insideOrNot(1,2,3)
+    ret = insideOrNot(pos[focus2_key][0]+20, pos[focus2_key][1], pos[focus2_key][2])
 
     if ret <= 1:
         print("Inside")
