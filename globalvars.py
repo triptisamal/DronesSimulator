@@ -12,6 +12,7 @@ def init():
     global node
     global pid
     global number_of_nodes
+    global G
     pos = []
     e = 0.6
     focus1_key=0
