@@ -6,6 +6,12 @@ def init():
     global a
     global b
     global c
+    global packet
+    global now
+    global now_e
+    global node
+    global pid
+    global number_of_nodes
     pos = []
     e = 0.6
     focus1_key=0
@@ -13,3 +19,31 @@ def init():
     a=0
     b=0
     c=0
+    packet = {
+            'pID':0,    #packet ID
+            'dLoc':(0,0,0),   #destination location
+            'tLoc':(0,0,0),    #transmitter (intermediate node) location
+            'sLoc':(0,0,0), #source location
+            'myLoc':(0,0,0), #my location 
+            
+            #petal parameters 
+            'eccentricity':0.6, #of the segment corresponding to orbital eccentricity 
+
+            #back off time parameters
+            'tUB1':0.002, #seconds;tB1 -> back-off time proportional to the distance from destination. 
+                          #This is bounded above by tUb1.
+            'tUB2':0.0005, #seconds;tB2 -> back-off time proportional to the distance from the source-destination 
+                           #line. This is bounded above by tUb2.
+
+
+            #SINGLE zone means petal does not change
+            'zoneType':"SINGLE"
+
+        }#message details
+
+    event_queue = []
+    now = 0
+    now_e = 1
+    pid = 1 #count of all packets created throughout the simulation
+    number_of_nodes = 50
+    
