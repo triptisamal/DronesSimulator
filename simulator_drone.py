@@ -153,7 +153,6 @@ def main():
         print("\nEvent occuring: ",str(item))
         #process event TODO
         process_event(str(item))
-        #call node_handler() TODO
         print("\nEVENT QUEUE:\n")
         print("-----------------")
         print(*globalvars.event_queue,sep="\n")
