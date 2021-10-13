@@ -17,11 +17,6 @@ def update_packet(loc):
     '''This method is for creating a packet. It is called by each source node'''
     globalvars.packet['tLoc'] = loc
     globalvars.packet['myLoc'] = loc
-  #  globalvars.packet['eccentricity'] = 0.6
-  #  globalvars.packet['tUB1'] = 0.002
-  #  globalvars.packet['tUB2'] = 0.0005
-  #  globalvars.packet['zoneType'] = "SINGLE"
-
 
 def node_handler(node_id, action,e):
     '''This handles everything that a node is supposed to do:
@@ -83,17 +78,14 @@ def node_handler(node_id, action,e):
 
 
             ##backoff timer start TODO
-
-
+            bofftime = calculate_backoff(location[0])
+            print("Back off time =",bofftime, "seconds")
             event_id = "BROADCAST_%03d" % (globalvars.idn)
             globalvars.idn += 1
             event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
             globalvars.event_queue.append(event)
         else:
             print("it is outside petal; not broadcasting")
-
-        
-
 
 
 
@@ -114,8 +106,6 @@ def process_event(e):
         node_id = int(node_idstr[0])
         print(node_id)
         node_handler(node_id,"INITIATE_BROADCAST",e)
-
-
 
 
     if "BROADCAST" in e:
@@ -151,7 +141,6 @@ def main():
     while globalvars.event_queue:
         item = globalvars.event_queue.popleft()
         print("\nEvent occuring: ",str(item))
-        #process event TODO
         process_event(str(item))
         print("\nEVENT QUEUE:\n")
         print("-----------------")

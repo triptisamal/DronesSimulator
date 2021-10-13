@@ -5,11 +5,69 @@ import random
 import math
 import globalvars
 import pylab
-
+import numpy as np
 
 from itertools import combinations
 import matplotlib.pyplot as plt
 import math
+
+
+def source_destination_distance():
+    
+    ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
+    focaldist = math.sqrt(ff)
+    
+    return focaldist
+
+
+def magnitude(x):
+ return math.sqrt(sum(i*i for i in x))
+
+
+
+
+def calculate_backoff(locationstr):
+
+    '''returns backoff time in seconds'''
+
+    #string processing to extract the exact x,y,z coordinates
+    arr = locationstr.split(', ')
+    x = float(arr[0])
+    y = float(arr[1])
+    z = float(arr[2])
+
+    t = (x,y,z) #t is the node for which backoff is calculated
+
+    #ds is the directional vector of line joining points d (destination) and s (source)
+    #calculated by subtracting dest coordinates from source coordinates 
+    ds = tuple(map(lambda i, j: i - j, globalvars.packet['sLoc'], globalvars.packet['dLoc'] ))
+
+    #dt is the directional vector of line joining d (destination) and t (node for which backoff is calculated)
+    dt = tuple(map(lambda i, j: i - j, t, globalvars.packet['dLoc'] ))
+
+    #To find: projection of vector dt_v on ds_v
+
+    dt_v = np.array([dt[0],dt[1],dt[2]])
+    ds_v = np.array([ds[0],ds[1],ds[2]])
+
+    # finding norm of the vector ds_v
+    ds_v_norm = np.sqrt(sum(ds_v*ds_v)) 
+
+    # Apply the formula for projecting a vector onto another vector
+    # find dot product using np.dot()
+    proj_of_dsv_on_dtv = (np.dot(dt_v, ds_v)/ds_v_norm*ds_v_norm)*ds_v
+
+    #backoff time proportional to the distance from destination
+
+    tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dsv_on_dtv))/magnitude(ds_v) 
+
+    #backoff time proportional to the distance from source-destination line
+    tB2 = (globalvars.packet['tUB2'] * magnitude(ds_v))/source_destination_distance() 
+
+
+    backofftime = tB1 + tB2
+
+    return backofftime
 
 
 def insideOrNot(locationstr):
