@@ -13,6 +13,7 @@ def init():
     global pid
     global number_of_nodes
     global G
+    global idn
     pos = []
     e = 0.6
     focus1_key=0
@@ -46,5 +47,6 @@ def init():
     now = 0
     now_e = 1
     pid = 1 #count of all packets created throughout the simulation
-    number_of_nodes = 50
+    number_of_nodes = 250
+    idn = 0
     

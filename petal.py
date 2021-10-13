@@ -6,24 +6,32 @@ import math
 import globalvars
 import pylab
 
-#def insideOrNot(x,y,z):
-#    global focus1_key
-#    global focus2_key
-#    global a
-#    global b
-#    global c
-#    global pos
-#    #eq of the ellipsoid centered at (h,k,f)
-#
-#    h= (pos[focus1_key][0]+pos[focus2_key][0])/2
-#    k= (pos[focus1_key][1]+pos[focus2_key][1])/2
-#    f= (pos[focus1_key][2]+pos[focus2_key][2])/2
-#    sol = (x-h)*(x-h)/(a*a) + (y-k)*(y-k)/(b*b) + (x-f)*(x-f)/(c*c)
-#    #semi axes are of lengths a, b, c
-#    return sol
+
 from itertools import combinations
 import matplotlib.pyplot as plt
 import math
+
+
+def insideOrNot(locationstr):
+
+    #string processing to extract the exact x,y,z coordinates
+    arr = locationstr.split(', ')
+    x = float(arr[0])
+    y = float(arr[1])
+    z = float(arr[2])
+
+    #eq of the ellipsoid centered at (h,k,f)
+
+    h= (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2
+    k= (globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2
+    f= (globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2
+    sol = (x-h)*(x-h)/(globalvars.a*globalvars.a) + (y-k)*(y-k)/(globalvars.b*globalvars.b) + (x-f)*(x-f)/(globalvars.c*globalvars.c)
+    #semi axes are of lengths a, b, c
+
+    if sol <= 1:
+        return 1 #inside
+    else:
+        return 0
 
 def initiate_petal_parameters():
 
@@ -98,7 +106,7 @@ def create_drones_network():
         globalvars.node[i]['loc'] = (x_nodes[i],y_nodes[i],z_nodes[i])
     print("NODES")
     print("----------------")
-    print(globalvars.node)
+    #print(globalvars.node)
 
 
     #create links between nodes according to wireless network
@@ -110,32 +118,50 @@ def create_drones_network():
     #network_width = 1000 feet
     #wireless_range = 250-300 feet outside
     #since, points are generated inside cubic (1,1,1) distance
-    #wireless range = 250/1000 - 300/1000
+    #wireless range = 50/1000 - 75/1000
     #Minimum distance between the drones should be 10 feet,i.e., 10/1000=0.001
+
+    #nodes -- 250 
+    #range 90 - 250 feet
     
 
+    to_del = []
     for u, v in combinations(globalvars.G, 2):
-      dist=distance(u,v)
-      if dist <=0.001:
-          print("distance=",dist)
-      if dist >= 0.3:
+      dist = distance(u,v)
+      if dist <= 0.001:
+          print("distance=",dist," : nodes are too close, removing")
+          to_del.append(u)
+          to_del.append(v)
+          continue
+      if dist >= 0.25:
           pass
-      elif dist < 0.25:
+      elif dist < 0.09:
           globalvars.G.add_edge(u, v)
       else:
-          p = 1 - ((dist - 0.25)/0.05)
+          p = 1 - ((dist - 0.09)/0.16)
           q = random.uniform(0,1)
           if q <= p:
               globalvars.G.add_edge(u, v)
-    
+    globalvars.G.remove_nodes_from(to_del) 
+   
+    #update number of nodes
+    globalvars.number_of_nodes = len(globalvars.G.nodes())
     #make adj list correct (both directions) 
     print("ADJACENCY LIST")
     print("----------------")
 
-    for line in generate_adjlist_with_all_edges(globalvars.G,' '):
-        print(line)
+    #for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+    #    print(line)
     
     #plot the figure
     pylab.figure(1,figsize=(10,10))
-    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'))
-    plt.show()
+    options = {
+    "node_color": "blue",
+    "node_size": 30,
+    "edge_color": "grey",
+    "linewidths": 0,
+    "width": 0.6,
+    }
+
+    #nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
+    #plt.show()

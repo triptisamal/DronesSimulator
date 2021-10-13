@@ -1,6 +1,8 @@
 from collections import deque
 from petal import *
 import globalvars
+import re
+
 
 def wireless_handler():
     '''This deals with the range of transmission while broadcast
@@ -11,11 +13,14 @@ def wireless_handler():
     print(globalvars.pos)
 
 
-def create_packet():
+def update_packet(loc):
     '''This method is for creating a packet. It is called by each source node'''
-    globalvars.packet['pID'] = globalvars.pid
-    globalvars.pid += 1
-
+    globalvars.packet['tLoc'] = loc
+    globalvars.packet['myLoc'] = loc
+  #  globalvars.packet['eccentricity'] = 0.6
+  #  globalvars.packet['tUB1'] = 0.002
+  #  globalvars.packet['tUB2'] = 0.0005
+  #  globalvars.packet['zoneType'] = "SINGLE"
 
 
 def node_handler(node_id, action):
@@ -37,29 +42,80 @@ def node_handler(node_id, action):
 
     if action == "INITIATE_TX":
         #This is the first node, src
-        print("Source ",node_id," is creating the packet")
-        create_packet()
-        event = "Packet %d created at %s at %d seconds" %(globalvars.packet['pID'],globalvars.packet['sLoc'],globalvars.now)
+        print("Source ",node_id," is creating the packet, ", globalvars.packet['pID']," at",globalvars.now, "seconds." )
+        update_packet(loc)
+        #pid is incremented the only after a source creates a packet
+        #in the next round of petal routing, this new pid will be used
+        globalvars.pid += 1
         globalvars.now = globalvars.now + globalvars.now_e
         ##TODO now_e will be calculated as propagation delay (dist/c) and other delays
-        event = "Packet %d broadcast at %s at %d seconds" %(globalvars.packet['pID'],globalvars.packet['sLoc'],globalvars.now)
-        print("Event ",event," getting added to the queue")
+        event_id = "BROADCAST_%03d" % (globalvars.idn)
+        globalvars.idn += 1
+        event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
         globalvars.event_queue.append(event)
         #Read adjacency list and create receive events
         for s, nbrs in globalvars.G.adjacency():
             if s == node_id:
                 for t, data in nbrs.items():
-                    event = "Node %d received packet from node %d at %d seconds" %(t,node_id,globalvars.now)
-                    print("Event ",event," getting added to the queue")
+                    event_id = "RECEIVE_%03d" % (globalvars.idn)
+                    globalvars.idn += 1
+                    
+                    receiverloc = (0,0,0)
+                    #find the location of the node corresponding that is receiving this packet
+                    for i in range(globalvars.number_of_nodes):
+                        if globalvars.node[i]['nodeID'] == t:
+                            receiverloc = globalvars.node[i]['loc']
+                            break
+                    update_packet(receiverloc)
+                    event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
+                    #globalvars.now = globalvars.now + globalvars.now_e
+                    #event = "Node %d received packet %d from node %d at %d seconds" %(t,globalvars.packet['pID'],node_id,globalvars.now)
                     globalvars.event_queue.append(event)
             
 
 
-        #Then broadcast
-    if action == "FORWARDING_TX":
-        #find if inside a petal
-       print("") 
+
+def process_event(e):
+    '''Checks what type of event is extracted, and decides the course of action, 
+        i.e., what future events need to be added/ removed'''
+
+    if "RECEIVE" in e:
+        print("it is a receive event")
+        ##it is receive event, so add a future broadcast event
+        ##example:
+        ##EventID:RECEIVE_008, node:198, time: 1, details: The packet is {'pID': 0, 'dLoc': (0.57229507, 0.025313331, 0.18988311), 'tLoc': (0.17912914, 0.76912647, 0.88080639), 'sLoc': (0.26650634, 0.79798305, 0.8773067), 'myLoc': (0.17912914, 0.76912647, 0.88080639), 'eccentricity': 0.6, 'tUB1': 0.002, 'tUB2': 0.0005, 'zoneType': 'SINGLE'}
+        ##Node 30 received packet <pid> from node 152 at 1 seconds
+        ##whoever received will create the broadcast event
         
+        ## find the node id of the node where the receive happened (the same will broadcast if inside petal)
+        node_idstr = re.findall(r"node:(.*?),",e)
+        node_id = int(node_idstr[0])
+        print(node_id)
+
+
+        ##first find if it is inside petal
+        _location = re.findall(r"'myLoc': (.*?), 'eccentricity'",e)
+        location = re.findall(r"\((.*?)\)",_location[0])
+        inside = insideOrNot(location[0])
+
+        if inside == 1:
+            #it is inside the petal
+            print("it is inside petal")
+
+
+            ##backoff timer start TODO
+
+
+            event_id = "BROADCAST_%03d" % (globalvars.idn)
+            globalvars.idn += 1
+            event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+            globalvars.event_queue.append(event)
+        else:
+            print("it is outside petal; not broadcasting")
+
+
+      if "BROADCAST" in e:
+          print("it is a broadcast event")
 
 
 
@@ -84,16 +140,19 @@ def main():
             src = globalvars.node[i]['nodeID'] = i
             break
     node_handler(src,"INITIATE_TX")
-    print("EVENT QUEUE:\n")
-    print(globalvars.event_queue)
+    print("\nEVENT QUEUE:\n")
+    print("-----------------")
+    print(*globalvars.event_queue,sep="\n")
     
     while globalvars.event_queue:
         item = globalvars.event_queue.popleft()
-        print("Event occuring: ",str(item))
+        print("\nEvent occuring: ",str(item))
         #process event TODO
+        process_event(str(item))
         #call node_handler() TODO
-        print("EVENT QUEUE:\n")
-        print(globalvars.event_queue)
+        print("\nEVENT QUEUE:\n")
+        print("-----------------")
+        print(*globalvars.event_queue,sep="\n")
 
 if __name__=="__main__":
     main()
