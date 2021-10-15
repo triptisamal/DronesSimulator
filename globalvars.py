@@ -14,8 +14,9 @@ def init():
     global number_of_nodes
     global G
     global idn
+    global broadcast
     pos = []
-    e = 0.6
+    e = 0.8
     focus1_key=0
     focus2_key=0
     a=0
@@ -29,7 +30,7 @@ def init():
             'myLoc':(0,0,0), #my location 
             
             #petal parameters 
-            'eccentricity':0.6, #of the segment corresponding to orbital eccentricity 
+            'eccentricity':0.8, #of the segment corresponding to orbital eccentricity 
 
             #back off time parameters
             'tUB1':0.002, #seconds;tB1 -> back-off time proportional to the distance from destination. 
@@ -49,4 +50,5 @@ def init():
     pid = 1 #count of all packets created throughout the simulation
     number_of_nodes = 250
     idn = 0
+    broadcast = 0
     

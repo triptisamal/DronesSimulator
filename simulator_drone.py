@@ -73,6 +73,8 @@ def node_handler(node_id, action,e):
         inside = insideOrNot(location[0])
 
         if inside == 1:
+            globalvars.broadcast += 1
+            globalvars.node[node_id]['packet'] = 1
             #it is inside the petal
             print("it is inside petal")
 
@@ -86,6 +88,27 @@ def node_handler(node_id, action,e):
             globalvars.event_queue.append(event)
         else:
             print("it is outside petal; not broadcasting")
+
+    if action == "INITIATE_RECEIVE":
+        ##Look for all neighboring nodes and add events for receive
+        #Read adjacency list and create receive events
+        for s, nbrs in globalvars.G.adjacency():
+            if s == node_id:
+                for t, data in nbrs.items():
+                    event_id = "RECEIVE_%03d" % (globalvars.idn)
+                    globalvars.idn += 1
+                    
+                    receiverloc = (0,0,0)
+                    #find the location of the node corresponding that is receiving this packet
+                    for i in range(globalvars.number_of_nodes):
+                        if globalvars.node[i]['nodeID'] == t:
+                            receiverloc = globalvars.node[i]['loc']
+                            break
+                    update_packet(receiverloc)
+                    event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
+                    #globalvars.now = globalvars.now + globalvars.now_e
+                    globalvars.event_queue.append(event)
+
 
 
 
@@ -105,11 +128,28 @@ def process_event(e):
         node_idstr = re.findall(r"node:(.*?),",e)
         node_id = int(node_idstr[0])
         print(node_id)
-        node_handler(node_id,"INITIATE_BROADCAST",e)
+
+        #find destination id
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.node[i]['loc'] == globalvars.packet['dLoc']:
+                dest_id = globalvars.node[i]['nodeID']
+                break
+        #initiate broadcast only if the receiver is not destination
+        if node_id != dest_id and globalvars.node[node_id]['packet'] == 0:
+            node_handler(node_id,"INITIATE_BROADCAST",e)
+        else:
+            print("DESTINATION HAS RECEIVED THE PACKET")
 
 
     if "BROADCAST" in e:
         print("it is a broadcast event")
+        #EventID:BROADCAST_002, node:19, time: 1, details: The packet is {'pID': 0, 'dLoc': (0.3179515, 0.75904512, 0.032490466), 'tLoc': (0.036272522, 0.19901623, 0.51243943), 'sLoc': (0.033281673, 0.24830705, 0.4337596), 'myLoc': (0.036272522, 0.19901623, 0.51243943), 'eccentricity': 0.6, 'tUB1': 0.002, 'tUB2': 0.0005, 'zoneType': 'SINGLE'}
+        
+        ## find the node id of the node where the receive happened (the same will broadcast if inside petal)
+        node_idstr = re.findall(r"node:(.*?),",e)
+        node_id = int(node_idstr[0])
+        print(node_id)
+        node_handler(node_id,"INITIATE_RECEIVE",e)
 
 
 
@@ -146,6 +186,7 @@ def main():
         print("-----------------")
         print(*globalvars.event_queue,sep="\n")
 
+    print("Total number of broadcasts = ",globalvars.broadcast)
 if __name__=="__main__":
     main()
 

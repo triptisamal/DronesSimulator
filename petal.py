@@ -158,10 +158,11 @@ def create_drones_network():
   
 
     #assign node id to each coordinate
-    globalvars.node = [{'nodeID':0, 'loc':(0,0,0)} for i in range(globalvars.number_of_nodes)]
+    globalvars.node = [{'nodeID':0, 'loc':(0,0,0), 'packet':0} for i in range(globalvars.number_of_nodes)]
     for i in range(globalvars.number_of_nodes):
         globalvars.node[i]['nodeID'] = i
         globalvars.node[i]['loc'] = (x_nodes[i],y_nodes[i],z_nodes[i])
+        globalvars.node[i]['packet'] = 0
     print("NODES")
     print("----------------")
     #print(globalvars.node)
