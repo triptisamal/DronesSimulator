@@ -15,6 +15,8 @@ def init():
     global G
     global idn
     global broadcast
+    global transmission_delay
+    global speed
     pos = []
     e = 0.8
     focus1_key=0
@@ -51,4 +53,6 @@ def init():
     number_of_nodes = 250
     idn = 0
     broadcast = 0
+    transmission_delay = 3 #seconds
+    speed = 299792458 #m / s
     

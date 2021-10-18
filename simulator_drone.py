@@ -42,7 +42,7 @@ def node_handler(node_id, action,e):
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
-        globalvars.now = globalvars.now + globalvars.now_e
+        #globalvars.now = globalvars.now + globalvars.now_e
         ##TODO now_e will be calculated as propagation delay (dist/c) and other delays
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
@@ -62,9 +62,17 @@ def node_handler(node_id, action,e):
                             receiverloc = globalvars.node[i]['loc']
                             break
                     update_packet(receiverloc)
+                    dist = distance(s, t)
+                    print("DISTANCE = ", dist)
+                    #convert distance to m
+                    dist = 0.3048*dist
+                    propagation_delay = dist/globalvars.speed
+                    time = globalvars.transmission_delay + propagation_delay 
+                    globalvars.now = globalvars.now + time
                     event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
                     #globalvars.now = globalvars.now + globalvars.now_e
                     globalvars.event_queue.append(event)
+                
     
     if action == "INITIATE_BROADCAST":
         ##first find if it is inside petal
@@ -74,7 +82,7 @@ def node_handler(node_id, action,e):
 
         if inside == 1:
             globalvars.broadcast += 1
-            globalvars.node[node_id]['packet'] = 1
+            globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
             print("it is inside petal")
 
@@ -82,8 +90,13 @@ def node_handler(node_id, action,e):
             ##backoff timer start TODO
             bofftime = calculate_backoff(location[0])
             print("Back off time =",bofftime, "seconds")
+
+            ##start backoff timer
+
+
             event_id = "BROADCAST_%03d" % (globalvars.idn)
             globalvars.idn += 1
+            globalvars.now = globalvars.now + bofftime
             event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
             globalvars.event_queue.append(event)
         else:
@@ -105,6 +118,13 @@ def node_handler(node_id, action,e):
                             receiverloc = globalvars.node[i]['loc']
                             break
                     update_packet(receiverloc)
+                    dist = distance(s, t)
+                    print("DISTANCE = ", dist)
+                    #convert distance to m
+                    dist = 0.3048*dist
+                    propagation_delay = dist/globalvars.speed
+                    time = globalvars.transmission_delay + propagation_delay 
+                    globalvars.now = globalvars.now + time
                     event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
                     #globalvars.now = globalvars.now + globalvars.now_e
                     globalvars.event_queue.append(event)
