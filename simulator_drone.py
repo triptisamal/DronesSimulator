@@ -179,34 +179,34 @@ def main():
     
     globalvars.init()
     create_drones_network()
-    initiate_petal_parameters()
+    #initiate_petal_parameters()
    
 
-    print("EVENTS")
-    print("-------")
-    globalvars.event_queue = deque()
+    #print("EVENTS")
+    #print("-------")
+    #globalvars.event_queue = deque()
    
 
-    #find the node ID of src and send to node handler
-    src = 0
-    for i in range(globalvars.number_of_nodes):
-        if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
-            src = globalvars.node[i]['nodeID'] = i
-            break
-    node_handler(src,"INITIATE_TRANSMISSION",0)
-    print("\nEVENT QUEUE:\n")
-    print("-----------------")
-    print(*globalvars.event_queue,sep="\n")
-    
-    while globalvars.event_queue:
-        item = globalvars.event_queue.popleft()
-        print("\nEvent occuring: ",str(item))
-        process_event(str(item))
-        print("\nEVENT QUEUE:\n")
-        print("-----------------")
-        print(*globalvars.event_queue,sep="\n")
+    ##find the node ID of src and send to node handler
+    #src = 0
+    #for i in range(globalvars.number_of_nodes):
+    #    if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
+    #        src = globalvars.node[i]['nodeID'] = i
+    #        break
+    #node_handler(src,"INITIATE_TRANSMISSION",0)
+    #print("\nEVENT QUEUE:\n")
+    #print("-----------------")
+    #print(*globalvars.event_queue,sep="\n")
+    #
+    #while globalvars.event_queue:
+    #    item = globalvars.event_queue.popleft()
+    #    print("\nEvent occuring: ",str(item))
+    #    process_event(str(item))
+    #    print("\nEVENT QUEUE:\n")
+    #    print("-----------------")
+    #    print(*globalvars.event_queue,sep="\n")
 
-    print("Total number of broadcasts = ",globalvars.broadcast)
+    #print("Total number of broadcasts = ",globalvars.broadcast)
 if __name__=="__main__":
     main()
 

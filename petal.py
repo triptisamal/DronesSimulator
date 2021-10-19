@@ -1,6 +1,7 @@
 #find if a point is inside an ellipsoid
 import plotly.graph_objects as go
 import networkx as nx
+from networkx import grid_graph
 import random
 import math
 import globalvars
@@ -150,8 +151,9 @@ def create_drones_network():
     seed = 20160  # seed random number generators for reproducibility
 
     # Use seed for reproducibility
+
     globalvars.G = nx.gnm_random_graph(n, m, seed=seed)
-    globalvars.pos = nx.random_layout(globalvars.G,seed=seed,dim=3)
+    globalvars.pos = nx.spectral_layout(globalvars.G,dim=3)
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
     y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
     z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]
@@ -175,7 +177,6 @@ def create_drones_network():
     #network_height = 1000 feet
     #network_length = 1000 feet 
     #network_width = 1000 feet
-    #wireless_range = 250-300 feet outside
     #since, points are generated inside cubic (1,1,1) distance
     #wireless range = 50/1000 - 75/1000
     #Minimum distance between the drones should be 10 feet,i.e., 10/1000=0.001
@@ -222,5 +223,5 @@ def create_drones_network():
     "width": 0.6,
     }
 
-    #nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
-    #plt.show()
+    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
+    plt.show()
