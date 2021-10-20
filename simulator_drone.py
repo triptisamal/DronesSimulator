@@ -1,9 +1,10 @@
 from collections import deque
+from copy import deepcopy
 from petal import *
 import globalvars
 import re
 
-
+import sys
 def wireless_handler():
     '''This deals with the range of transmission while broadcast
     
@@ -18,6 +19,16 @@ def update_packet(loc):
     globalvars.packet['tLoc'] = loc
     globalvars.packet['myLoc'] = loc
 
+
+
+def create_event(eventid,nodeid,timeofevent,packetdetails):
+    event = {'event_id':"DEFAULT", 'node':0,'time':0, 'details':"Packet details"}
+    event['event_id'] = eventid
+    event['node'] = nodeid
+    event['time'] = timeofevent
+    event['details'] = packetdetails
+
+    return event
 def node_handler(node_id, action,e):
     '''This handles everything that a node is supposed to do:
         1. Find if it is inside a petal
@@ -48,8 +59,17 @@ def node_handler(node_id, action,e):
         globalvars.pid += 1
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
-        event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
-        globalvars.event_queue.append(event)
+
+        e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+        globalvars.event_queue.append(deepcopy(e))
+
+        #sort queue according to the simulated real time (time of event happening)
+        globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+
+
+
+        #event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+        #globalvars.event_queue.append(event)
         #Read adjacency list and create receive events
         for s, nbrs in globalvars.G.adjacency():
             if s == node_id:
@@ -71,16 +91,24 @@ def node_handler(node_id, action,e):
                     propagation_delay = dist/globalvars.speed
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
-                    event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
+
+                    e = create_event(event_id,t,globalvars.now,globalvars.packet)
+                    globalvars.event_queue.append(deepcopy(e))
+                    globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+
+                    #event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
                     #globalvars.now = globalvars.now + globalvars.now_e
-                    globalvars.event_queue.append(event)
+                   # globalvars.event_queue.append(event)
                 
     
     if action == "INITIATE_BROADCAST":
+
+        print("Initialing broadcast")
         ##first find if it is inside petal
-        _location = re.findall(r"'myLoc': (.*?), 'eccentricity'",e)
-        location = re.findall(r"\((.*?)\)",_location[0])
-        inside = insideOrNot(location[0])
+      #  _location = re.findall(r"'myLoc': (.*?), 'eccentricity'",e['details'][])
+      #  location = re.findall(r"\((.*?)\)",_location[0])
+      #  inside = insideOrNot(location[0])
+        inside = insideOrNot(e['details']['myLoc'])
 
 
         if inside == 1:
@@ -90,31 +118,40 @@ def node_handler(node_id, action,e):
             print("it is inside petal")
 
             ##backoff timer start TODO
-            bofftime = calculate_backoff(location[0])
+            #bofftime = calculate_backoff(location[0])
+            bofftime = calculate_backoff(e['details']['myLoc'])
             print("Back off time =",bofftime, "seconds")
             globalvars.now = globalvars.now + bofftime
-            event_id = "TIMEREXPIRY_%03d" % (globalvars.idn)
-            globalvars.idn += 1
-            event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
-            globalvars.event_queue.append(event)
+         #   event_id = "TIMEREXPIRY_%03d" % (globalvars.idn)
+         #   globalvars.idn += 1
+           # event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+          #  globalvars.event_queue.append(event)
+
+         #   e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+         #   globalvars.event_queue.append(deepcopy(e))
+         #   globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+
             event_id = "BROADCAST_%03d" % (globalvars.idn)
             globalvars.idn += 1
-            event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
-            globalvars.event_queue.append(event)
-            for i in range(globalvars.number_of_nodes):
-                if globalvars.state_vector[i]['node_id'] == node_id:
-                    globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
-                    globalvars.state_vector[i]['packet_seen'] = 1
-                    globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
-                    globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+            e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+            globalvars.event_queue.append(deepcopy(e))
+            globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+            #event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+            #globalvars.event_queue.append(event)
+        #    for i in range(globalvars.number_of_nodes):
+        #        if globalvars.state_vector[i]['node_id'] == node_id:
+        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+        #            globalvars.state_vector[i]['packet_seen'] = 1
+        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
         else:
             print("it is outside petal; not broadcasting")
-            for i in range(globalvars.number_of_nodes):
-                if globalvars.state_vector[i]['node_id'] == node_id:
-                    globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
-                    globalvars.state_vector[i]['packet_seen'] = 1
-                    globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
-                    globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+        #    for i in range(globalvars.number_of_nodes):
+        #        if globalvars.state_vector[i]['node_id'] == node_id:
+        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+        #            globalvars.state_vector[i]['packet_seen'] = 1
+        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
 
     if action == "INITIATE_RECEIVE":
         ##Look for all neighboring nodes and add events for receive
@@ -139,8 +176,11 @@ def node_handler(node_id, action,e):
                     propagation_delay = dist/globalvars.speed
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
-                    event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
-                    globalvars.event_queue.append(event)
+                    e = create_event(event_id,t,globalvars.now,globalvars.packet)
+                    globalvars.event_queue.append(deepcopy(e))
+                    globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+                    #event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
+                    #globalvars.event_queue.append(event)
 
 
 
@@ -149,7 +189,8 @@ def process_event(e):
     '''Checks what type of event is extracted, and what node initiated it
     Call node_handler for that node'''
 
-    if "RECEIVE" in e:
+
+    if "RECEIVE" in e['event_id']:
         print("it is a receive event")
         ##it is receive event, so add a future broadcast event
         ##example:
@@ -158,8 +199,9 @@ def process_event(e):
         ##whoever received will create the broadcast event
         
         ## find the node id of the node where the receive happened (the same will broadcast if inside petal)
-        node_idstr = re.findall(r"node:(.*?),",e)
-        node_id = int(node_idstr[0])
+       # node_idstr = re.findall(r"node:(.*?),",e)
+       # node_id = int(node_idstr[0])
+        node_id = e['node']
         print(node_id)
 
         #find destination id
@@ -174,13 +216,15 @@ def process_event(e):
             print("DESTINATION HAS RECEIVED THE PACKET")
 
 
-    if "BROADCAST" in e:
+    if "BROADCAST" in e['event_id']:
         print("it is a broadcast event")
         #EventID:BROADCAST_002, node:19, time: 1, details: The packet is {'pID': 0, 'dLoc': (0.3179515, 0.75904512, 0.032490466), 'tLoc': (0.036272522, 0.19901623, 0.51243943), 'sLoc': (0.033281673, 0.24830705, 0.4337596), 'myLoc': (0.036272522, 0.19901623, 0.51243943), 'eccentricity': 0.6, 'tUB1': 0.002, 'tUB2': 0.0005, 'zoneType': 'SINGLE'}
         
         ## find the node id of the node where the receive happened (the same will broadcast if inside petal)
-        node_idstr = re.findall(r"node:(.*?),",e)
-        node_id = int(node_idstr[0])
+       # node_idstr = re.findall(r"node:(.*?),",e)
+       # node_id = int(node_idstr[0])
+        
+        node_id = e['node']
         print(node_id)
         node_handler(node_id,"INITIATE_RECEIVE",e)
 
@@ -216,9 +260,12 @@ def main():
     print(*globalvars.event_queue,sep="\n")
     
     while globalvars.event_queue:
-        item = globalvars.event_queue.popleft()
-        print("\nEvent occuring: ",str(item))
-        process_event(str(item))
+        item = globalvars.event_queue.pop(0)
+        #item = globalvars.event_queue.popleft()
+        #print("\nEvent occuring: ",str(item))
+        print("\nEvent occuring: ",item)
+        process_event(item)
+        #process_event(str(item))
         print("\nEVENT QUEUE:\n")
         print("-----------------")
         print(*globalvars.event_queue,sep="\n")

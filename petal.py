@@ -27,16 +27,18 @@ def magnitude(x):
 
 
 
-def calculate_backoff(locationstr):
+def calculate_backoff(location):
 
     '''returns backoff time in seconds'''
 
-    #string processing to extract the exact x,y,z coordinates
-    arr = locationstr.split(', ')
-    x = float(arr[0])
-    y = float(arr[1])
-    z = float(arr[2])
-
+    ##string processing to extract the exact x,y,z coordinates
+    #arr = locationstr.split(', ')
+    #x = float(arr[0])
+    #y = float(arr[1])
+    #z = float(arr[2])
+    x = location[0]
+    y = location[1]
+    z = location[2]
     t = (x,y,z) #t is the node for which backoff is calculated
 
     #ds is the directional vector of line joining points d (destination) and s (source)
@@ -71,14 +73,18 @@ def calculate_backoff(locationstr):
     return backofftime
 
 
-def insideOrNot(locationstr):
+def insideOrNot(location):
 
     #string processing to extract the exact x,y,z coordinates
-    arr = locationstr.split(', ')
-    x = float(arr[0])
-    y = float(arr[1])
-    z = float(arr[2])
+   # arr = locationstr.split(', ')
+   # x = float(arr[0])
+   # y = float(arr[1])
+   # z = float(arr[2])
 
+    x = location[0]
+    y = location[1]
+    z = location[2]
+        
     #eq of the ellipsoid centered at (h,k,f)
 
     h= (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2
