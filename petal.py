@@ -153,7 +153,7 @@ def create_drones_network():
     # Use seed for reproducibility
 
     globalvars.G = nx.gnm_random_graph(n, m, seed=seed)
-    globalvars.pos = nx.spectral_layout(globalvars.G,dim=3)
+    globalvars.pos = nx.random_layout(globalvars.G,dim=3)
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
     y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
     z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]
@@ -223,5 +223,5 @@ def create_drones_network():
     "width": 0.6,
     }
 
-    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
-    plt.show()
+#    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
+#    plt.show()

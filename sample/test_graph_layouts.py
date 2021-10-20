@@ -30,22 +30,25 @@ def main():
     d = 20
 
     # Make a graph and name it
-    g = nx.Graph(dim=3,name = "100x100 Field Random Network")
+    g = nx.Graph(dim=3,name = "10x10x5 Field Random Network")
 
-    node_loc = [{'x':coord_val(), 'y':coord_val(), 'z':coord_val()} for i in range(100)]
+    node_loc = [{'x':coord_val(), 'y':coord_val(), 'z':coord_val()} for i in range(500)]
     
+    n = 0
+    while n < 500:
+        for i in range(10):
+            for j in range(5):
+                for k in range(10):
+                    node_loc[n]['x'] = i
+                    node_loc[n]['y'] = j
+                    node_loc[n]['z'] = k
+                    n += 1
     
-    for k in range(100):
-        node_loc[n]['x'] = i
-        node_loc[n]['y'] = j
-        node_loc[n]['z'] = k
-
     # Generate 100 nodes
-    for num in range(0,100):
+    for num in range(0,500):
         g.add_node(num,pos=(node_loc[num]['x'],node_loc[num]['y'],node_loc[num]['z']))
-    pos=nx.get_node_attributes(g,'pos')
-    print(pos)
-    # Check node n against node n+1
+ #   pos=nx.get_node_attributes(g,'pos')
+ #   print(pos)
    # for n in range(100):
    #     for rl in range(100):
    #         # grab coordinates from nodes
@@ -60,38 +63,42 @@ def main():
    #         if distance(x1,x2,y1,y2,z1,z2) < d:
    #             # add edge
    #             g.add_edge(n,n+1)
-    to_del = []
-    for u, v in combinations(g, 2):
-      dist = distance(u,v,node_loc)
-      if dist <= 0.001:
-          print("distance=",dist," : nodes are too close, removing")
-          to_del.append(u)
-          to_del.append(v)
-          continue
-      if dist >= 0.25:
-          pass
-      elif dist < 0.09:
-          g.add_edge(u, v)
-      else:
-          p = 1 - ((dist - 0.09)/0.16)
-          q = random.uniform(0,1)
-          if q <= p:
-              g.add_edge(u, v)
-    g.remove_nodes_from(to_del)
-    # plot
-    # draw_random draws it on a plane, but randomly :(
-    nx.draw_random(g,node_size=50)
+  #  to_del = []
+  #  for u, v in combinations(g, 2):
+  #    dist = distance(u,v,node_loc)
+  #    if dist <= 0.001:
+  #        print("distance=",dist," : nodes are too close, removing")
+  #        to_del.append(u)
+  #        to_del.append(v)
+  #        continue
+  #    if dist >= 0.25:
+  #        pass
+  #    elif dist < 0.09:
+  #        g.add_edge(u, v)
+  #    else:
+  #        p = 1 - ((dist - 0.09)/0.16)
+  #        q = random.uniform(0,1)
+  #        if q <= p:
+  #            g.add_edge(u, v)
+  #  g.remove_nodes_from(to_del)
+   
+   # plot
+   # nx.draw_random(g,node_size=50)
+    #plt.show()
+    pylab.figure(1,figsize=(10,10))
+    options = {
+    "node_color": "blue",
+    "node_size": 30,
+    "edge_color": "grey",
+    "linewidths": 0,
+    "width": 0.6,
+    }
 
+    nx.draw_random(g, cmap = plt.get_cmap('ocean'),**options)
     plt.show()
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-
 
 #import networkx as nx
 #import matplotlib.pyplot as plt

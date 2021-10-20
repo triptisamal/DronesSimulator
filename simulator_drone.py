@@ -34,6 +34,10 @@ def node_handler(node_id, action,e):
     for i in range(globalvars.number_of_nodes):
         if globalvars.node[i]['nodeID'] == node_id:
             loc = globalvars.node[i]['loc']
+    
+    #find the state of the packet id for this node
+
+
 
     if action == "INITIATE_TRANSMISSION":
         #This is the first node, src
@@ -42,8 +46,6 @@ def node_handler(node_id, action,e):
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
-        #globalvars.now = globalvars.now + globalvars.now_e
-        ##TODO now_e will be calculated as propagation delay (dist/c) and other delays
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
         event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
@@ -80,27 +82,39 @@ def node_handler(node_id, action,e):
         location = re.findall(r"\((.*?)\)",_location[0])
         inside = insideOrNot(location[0])
 
+
         if inside == 1:
             globalvars.broadcast += 1
             globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
             print("it is inside petal")
 
-
             ##backoff timer start TODO
             bofftime = calculate_backoff(location[0])
             print("Back off time =",bofftime, "seconds")
-
-            ##start backoff timer
-
-
-            event_id = "BROADCAST_%03d" % (globalvars.idn)
-            globalvars.idn += 1
             globalvars.now = globalvars.now + bofftime
+            event_id = "TIMEREXPIRY_%03d" % (globalvars.idn)
+            globalvars.idn += 1
             event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
             globalvars.event_queue.append(event)
+            event_id = "BROADCAST_%03d" % (globalvars.idn)
+            globalvars.idn += 1
+            event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+            globalvars.event_queue.append(event)
+            for i in range(globalvars.number_of_nodes):
+                if globalvars.state_vector[i]['node_id'] == node_id:
+                    globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+                    globalvars.state_vector[i]['packet_seen'] = 1
+                    globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+                    globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
         else:
             print("it is outside petal; not broadcasting")
+            for i in range(globalvars.number_of_nodes):
+                if globalvars.state_vector[i]['node_id'] == node_id:
+                    globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+                    globalvars.state_vector[i]['packet_seen'] = 1
+                    globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+                    globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
 
     if action == "INITIATE_RECEIVE":
         ##Look for all neighboring nodes and add events for receive
@@ -126,7 +140,6 @@ def node_handler(node_id, action,e):
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
                     event = "EventID:%s, node:%s, time: %d, details: The packet is %s" %(event_id,t,globalvars.now,globalvars.packet)
-                    #globalvars.now = globalvars.now + globalvars.now_e
                     globalvars.event_queue.append(event)
 
 
@@ -179,34 +192,38 @@ def main():
     
     globalvars.init()
     create_drones_network()
-    #initiate_petal_parameters()
+    initiate_petal_parameters()
    
 
-    #print("EVENTS")
-    #print("-------")
-    #globalvars.event_queue = deque()
+    print("EVENTS")
+    print("-------")
+    globalvars.event_queue = deque()
    
 
-    ##find the node ID of src and send to node handler
-    #src = 0
-    #for i in range(globalvars.number_of_nodes):
-    #    if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
-    #        src = globalvars.node[i]['nodeID'] = i
-    #        break
-    #node_handler(src,"INITIATE_TRANSMISSION",0)
-    #print("\nEVENT QUEUE:\n")
-    #print("-----------------")
-    #print(*globalvars.event_queue,sep="\n")
-    #
-    #while globalvars.event_queue:
-    #    item = globalvars.event_queue.popleft()
-    #    print("\nEvent occuring: ",str(item))
-    #    process_event(str(item))
-    #    print("\nEVENT QUEUE:\n")
-    #    print("-----------------")
-    #    print(*globalvars.event_queue,sep="\n")
+    #find the node ID of src and send to node handler
+    src = 0
+    for i in range(globalvars.number_of_nodes):
+        if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
+            src = globalvars.node[i]['nodeID'] = i
+            break
+    
+    #define data structure for state for the packet id for each node
+    globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0} for i in range(globalvars.number_of_nodes)]
 
-    #print("Total number of broadcasts = ",globalvars.broadcast)
+    node_handler(src,"INITIATE_TRANSMISSION",0)
+    print("\nEVENT QUEUE:\n")
+    print("-----------------")
+    print(*globalvars.event_queue,sep="\n")
+    
+    while globalvars.event_queue:
+        item = globalvars.event_queue.popleft()
+        print("\nEvent occuring: ",str(item))
+        process_event(str(item))
+        print("\nEVENT QUEUE:\n")
+        print("-----------------")
+        print(*globalvars.event_queue,sep="\n")
+
+    print("Total number of broadcasts = ",globalvars.broadcast)
 if __name__=="__main__":
     main()
 

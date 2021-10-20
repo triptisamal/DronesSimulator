@@ -17,6 +17,7 @@ def init():
     global broadcast
     global transmission_delay
     global speed
+    global state_vector
     pos = []
     e = 0.8
     focus1_key=0
