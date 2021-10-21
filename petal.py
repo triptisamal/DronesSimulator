@@ -24,18 +24,11 @@ def source_destination_distance():
 def magnitude(x):
  return math.sqrt(sum(i*i for i in x))
 
-
-
-
 def calculate_backoff(location):
 
     '''returns backoff time in seconds'''
 
-    ##string processing to extract the exact x,y,z coordinates
-    #arr = locationstr.split(', ')
-    #x = float(arr[0])
-    #y = float(arr[1])
-    #z = float(arr[2])
+    ##extract the exact x,y,z coordinates
     x = location[0]
     y = location[1]
     z = location[2]
@@ -58,14 +51,15 @@ def calculate_backoff(location):
 
     # Apply the formula for projecting a vector onto another vector
     # find dot product using np.dot()
-    proj_of_dsv_on_dtv = (np.dot(dt_v, ds_v)/ds_v_norm*ds_v_norm)*ds_v
+    proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm*ds_v_norm)*ds_v
 
     #backoff time proportional to the distance from destination
 
-    tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dsv_on_dtv))/magnitude(ds_v) 
+    tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dtv_on_dsv))/magnitude(ds_v) 
 
     #backoff time proportional to the distance from source-destination line
-    tB2 = (globalvars.packet['tUB2'] * magnitude(ds_v))/source_destination_distance() 
+    orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
+    tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
 
 
     backofftime = tB1 + tB2
