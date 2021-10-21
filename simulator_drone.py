@@ -29,6 +29,8 @@ def create_event(eventid,nodeid,timeofevent,packetdetails):
     event['details'] = packetdetails
 
     return event
+
+
 def node_handler(node_id, action,e):
     '''This handles everything that a node is supposed to do:
         1. Find if it is inside a petal
@@ -46,9 +48,6 @@ def node_handler(node_id, action,e):
         if globalvars.node[i]['nodeID'] == node_id:
             loc = globalvars.node[i]['loc']
     
-    #find the state of the packet id for this node
-
-
 
     if action == "INITIATE_TRANSMISSION":
         #This is the first node, src
@@ -85,7 +84,6 @@ def node_handler(node_id, action,e):
                             break
                     update_packet(receiverloc)
                     dist = distance(s, t)
-                    print("DISTANCE = ", dist)
                     #convert distance to m
                     dist = 0.3048*dist
                     propagation_delay = dist/globalvars.speed
@@ -101,57 +99,111 @@ def node_handler(node_id, action,e):
                    # globalvars.event_queue.append(event)
                 
     
-    if action == "INITIATE_BROADCAST":
 
-        print("Initialing broadcast")
-        ##first find if it is inside petal
-      #  _location = re.findall(r"'myLoc': (.*?), 'eccentricity'",e['details'][])
-      #  location = re.findall(r"\((.*?)\)",_location[0])
-      #  inside = insideOrNot(location[0])
+    if action == "START_BACKOFF":
+
+        #check if the node is inside petal or not
         inside = insideOrNot(e['details']['myLoc'])
-
-
         if inside == 1:
-            globalvars.broadcast += 1
             globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
             print("it is inside petal")
 
-            ##backoff timer start TODO
-            #bofftime = calculate_backoff(location[0])
+            ##backoff timer start 
             bofftime = calculate_backoff(e['details']['myLoc'])
             print("Back off time =",bofftime, "seconds")
             globalvars.now = globalvars.now + bofftime
-         #   event_id = "TIMEREXPIRY_%03d" % (globalvars.idn)
-         #   globalvars.idn += 1
-           # event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
-          #  globalvars.event_queue.append(event)
-
-         #   e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
-         #   globalvars.event_queue.append(deepcopy(e))
-         #   globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
-
-            event_id = "BROADCAST_%03d" % (globalvars.idn)
+            event_id = "BACKOFFTIMEREXPIRY_%03d" % (globalvars.idn)
             globalvars.idn += 1
+
             e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
             globalvars.event_queue.append(deepcopy(e))
             globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
-            #event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
-            #globalvars.event_queue.append(event)
-        #    for i in range(globalvars.number_of_nodes):
-        #        if globalvars.state_vector[i]['node_id'] == node_id:
-        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
-        #            globalvars.state_vector[i]['packet_seen'] = 1
-        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
-        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+
         else:
-            print("it is outside petal; not broadcasting")
-        #    for i in range(globalvars.number_of_nodes):
-        #        if globalvars.state_vector[i]['node_id'] == node_id:
-        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
-        #            globalvars.state_vector[i]['packet_seen'] = 1
-        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
-        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+            print("it is outside petal")
+
+
+
+    if action == "INITIATE_BROADCAST":
+
+        print("checking for broadcast")
+        print("node id is ",node_id)
+        print("state is:")
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                print("PID: ",globalvars.state_vector[i]['pid'])
+                print("packet seen? ",globalvars.state_vector[i]['packet_seen'])
+                print("transmitted? ",globalvars.state_vector[i]['transmitted'])
+                print("receive_count: ",globalvars.state_vector[i]['receive_count'])
+                print("time of state update: ",globalvars.state_vector[i]['time_of_state_update'])
+
+
+        #check the receive count
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                if globalvars.state_vector[i]['transmitted'] == 0: #transmission is pending
+                    if globalvars.state_vector[i]['receive_count'] <= 2:
+                        globalvars.state_vector[i]['transmitted'] == 1 #it should be transmitted
+                        globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+        
+                        print("Initializing broadcast")
+                        globalvars.broadcast += 1
+                        event_id = "BROADCAST_%03d" % (globalvars.idn)
+                        globalvars.idn += 1
+                        e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+                        globalvars.event_queue.append(deepcopy(e))
+                        globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+                    else:
+                        print("receive count is ",globalvars.state_vector[i]['receive_count'])
+        ##first find if it is inside petal
+      #  _location = re.findall(r"'myLoc': (.*?), 'eccentricity'",e['details'][])
+      #  location = re.findall(r"\((.*?)\)",_location[0])
+      #  inside = insideOrNot(location[0])
+#        inside = insideOrNot(e['details']['myLoc'])
+
+#
+#        if inside == 1:
+#            globalvars.broadcast += 1
+#            globalvars.node[node_id]['packet'] += 1
+#            #it is inside the petal
+#            print("it is inside petal")
+#
+#            ##backoff timer start TODO
+#            #bofftime = calculate_backoff(location[0])
+#            bofftime = calculate_backoff(e['details']['myLoc'])
+#            print("Back off time =",bofftime, "seconds")
+#            globalvars.now = globalvars.now + bofftime
+#         #   event_id = "TIMEREXPIRY_%03d" % (globalvars.idn)
+#         #   globalvars.idn += 1
+#           # event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+#          #  globalvars.event_queue.append(event)
+#
+#         #   e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+#         #   globalvars.event_queue.append(deepcopy(e))
+#         #   globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+#
+#            event_id = "BROADCAST_%03d" % (globalvars.idn)
+#            globalvars.idn += 1
+#            e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+#            globalvars.event_queue.append(deepcopy(e))
+#            globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+#            #event = "EventID:%s, node:%d, time: %d, details: The packet is %s" %(event_id,node_id,globalvars.now,globalvars.packet)
+#            #globalvars.event_queue.append(event)
+#        #    for i in range(globalvars.number_of_nodes):
+#        #        if globalvars.state_vector[i]['node_id'] == node_id:
+#        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+#        #            globalvars.state_vector[i]['packet_seen'] = 1
+#        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+#        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+#        else:
+#            print("it is outside petal; not broadcasting")
+#        #    for i in range(globalvars.number_of_nodes):
+#        #        if globalvars.state_vector[i]['node_id'] == node_id:
+#        #            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+#        #            globalvars.state_vector[i]['packet_seen'] = 1
+#        #            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+#        #            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
 
     if action == "INITIATE_RECEIVE":
         ##Look for all neighboring nodes and add events for receive
@@ -192,6 +244,9 @@ def process_event(e):
 
     if "RECEIVE" in e['event_id']:
         print("it is a receive event")
+        
+
+        
         ##it is receive event, so add a future broadcast event
         ##example:
         ##EventID:RECEIVE_008, node:198, time: 1, details: The packet is {'pID': 0, 'dLoc': (0.57229507, 0.025313331, 0.18988311), 'tLoc': (0.17912914, 0.76912647, 0.88080639), 'sLoc': (0.26650634, 0.79798305, 0.8773067), 'myLoc': (0.17912914, 0.76912647, 0.88080639), 'eccentricity': 0.6, 'tUB1': 0.002, 'tUB2': 0.0005, 'zoneType': 'SINGLE'}
@@ -202,18 +257,45 @@ def process_event(e):
        # node_idstr = re.findall(r"node:(.*?),",e)
        # node_id = int(node_idstr[0])
         node_id = e['node']
-        print(node_id)
+        #update state vector
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+                globalvars.state_vector[i]['packet_seen'] = 1
+                globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+                globalvars.state_vector[i]['receive_count'] += 1
+                globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+        #print state
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                print("node id: ",globalvars.state_vector[i]['node_id'])
+                print("PID: ",globalvars.state_vector[i]['pid'])
+                print("packet seen? ",globalvars.state_vector[i]['packet_seen'])
+                print("transmitted? ",globalvars.state_vector[i]['transmitted'])
+                print("receive_count: ",globalvars.state_vector[i]['receive_count'])
+                print("time of state update: ",globalvars.state_vector[i]['time_of_state_update'])
+
 
         #find destination id
         for i in range(globalvars.number_of_nodes):
             if globalvars.node[i]['loc'] == globalvars.packet['dLoc']:
                 dest_id = globalvars.node[i]['nodeID']
                 break
-        #initiate broadcast only if the receiver is not destination
-        if node_id != dest_id and globalvars.node[node_id]['packet'] == 0:
-            node_handler(node_id,"INITIATE_BROADCAST",e)
+        #start back off timer for future broadcast only if the receiver is not destination
+        #if node_id != dest_id and globalvars.node[node_id]['packet'] == 0:
+        if node_id != dest_id:
+            node_handler(node_id,"START_BACKOFF",e)
+            #node_handler(node_id,"INITIATE_BROADCAST",e)
         else:
-            print("DESTINATION HAS RECEIVED THE PACKET")
+            for i in range(globalvars.number_of_nodes):
+                if globalvars.state_vector[i]['node_id'] == node_id:
+                    if globalvars.state_vector[i]['receive_count'] == 1:
+                        print("THE PACKET REACHED DESTINATION")
+                        break
+                    else:
+                        print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
+                        break
+
 
 
     if "BROADCAST" in e['event_id']:
@@ -228,7 +310,12 @@ def process_event(e):
         print(node_id)
         node_handler(node_id,"INITIATE_RECEIVE",e)
 
-
+    
+    if "BACKOFF" in e['event_id']:
+        print("it is a back off timer expiry event")
+        node_id = e['node']
+        node_handler(node_id,"INITIATE_BROADCAST",e)
+         
 
 def main():
     
@@ -249,10 +336,16 @@ def main():
     for i in range(globalvars.number_of_nodes):
         if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
             src = globalvars.node[i]['nodeID'] = i
+            print("Source node ID: ",src)
+            break
+    for i in range(globalvars.number_of_nodes):
+        if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus2_key][0], globalvars.pos[globalvars.focus2_key][1], globalvars.pos[globalvars.focus2_key][2]):
+            des = globalvars.node[i]['nodeID'] = i
+            print("Destination node ID: ",des)
             break
     
     #define data structure for state for the packet id for each node
-    globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0} for i in range(globalvars.number_of_nodes)]
+    globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0,'receive_count':0,'time_of_update':0} for i in range(globalvars.number_of_nodes)]
 
     node_handler(src,"INITIATE_TRANSMISSION",0)
     print("\nEVENT QUEUE:\n")
