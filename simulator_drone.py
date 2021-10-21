@@ -287,14 +287,15 @@ def process_event(e):
             node_handler(node_id,"START_BACKOFF",e)
             #node_handler(node_id,"INITIATE_BROADCAST",e)
         else:
-            for i in range(globalvars.number_of_nodes):
-                if globalvars.state_vector[i]['node_id'] == node_id:
-                    if globalvars.state_vector[i]['receive_count'] == 1:
-                        print("THE PACKET REACHED DESTINATION")
-                        break
-                    else:
-                        print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
-                        break
+            print("THE PACKET REACHED DESTINATION")
+           # for i in range(globalvars.number_of_nodes):
+           #     if globalvars.state_vector[i]['node_id'] == node_id:
+           #         if globalvars.state_vector[i]['receive_count'] == 1:
+           #             print("THE PACKET REACHED DESTINATION")
+           #             break
+           #         else:
+           #             print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
+           #             break
 
 
 
