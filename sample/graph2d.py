@@ -1,5 +1,3 @@
-#https://www.idtools.com.au/3d-network-graphs-with-python-and-the-mplot3d-toolkit/
-
 import random, math
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,10 +13,8 @@ def distance(u, v, node_loc):
     x2 = node_loc[v]['x']
     y1 = node_loc[u]['y']
     y2 = node_loc[v]['y']
-    z1 = node_loc[u]['z']
-    z2 = node_loc[v]['z']
     
-    dd = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1)
+    dd = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)
     d = math.sqrt(dd)
     return d
 
@@ -32,32 +28,30 @@ def main():
     d = 20
 
     # Make a graph and name it
-    g = nx.Graph(dim=3,name = "10x10x5 Field Random Network")
+    g = nx.Graph(dim=2,name = "10x10x5 Field Random Network")
 
-    node_loc = [{'x':coord_val(), 'y':coord_val(), 'z':coord_val()} for i in range(500)]
+    node_loc = [{'x':coord_val(), 'y':coord_val()} for i in range(50)]
     
     n = 0
-    while n < 500:
+    while n < 50:
         for i in range(10):
             for j in range(5):
-                for k in range(10):
                     node_loc[n]['x'] = i
                     node_loc[n]['y'] = j
-                    node_loc[n]['z'] = k
                     n += 1
     
     
     
-    for num in range(0,500):
-        print(node_loc[num]['x'],node_loc[num]['y'],node_loc[num]['z'])
+    for num in range(0,50):
+        print(node_loc[num]['x'],node_loc[num]['y'])
 
-    for num in range(0,500):
-        g.add_node(num,pos=(node_loc[num]['x'],node_loc[num]['y'],node_loc[num]['z']))
-   # pos = nx.spring_layout(g)
+    for num in range(0,50):
+        g.add_node(num,pos=(node_loc[num]['x'],node_loc[num]['y']))
+
     pos=nx.get_node_attributes(g,'pos')
     print(pos)
-    for n in range(499):
-        for rl in range(499):
+    for n in range(49):
+        for rl in range(49):
             # Check the distance, if < d, generate edge
             if distance(n, rl, node_loc) < d:
                 # add edge
@@ -90,8 +84,8 @@ def main():
     "linewidths": 0,
     "width": 0.6,
     }
-   # nx.draw(g, pos, cmap = plt.get_cmap('ocean'),**options)
-    nx.draw_networkx_edges(g, pos)
+
+    nx.draw_networkx(g, pos)
     plt.show()
 
 if __name__ == '__main__':

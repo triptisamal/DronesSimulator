@@ -11,6 +11,7 @@ import numpy as np
 from itertools import combinations
 import matplotlib.pyplot as plt
 import math
+from mpl_toolkits.mplot3d import Axes3D
 
 
 def source_destination_distance():
@@ -37,9 +38,10 @@ def calculate_backoff(location):
     #ds is the directional vector of line joining points d (destination) and s (source)
     #calculated by subtracting dest coordinates from source coordinates 
     ds = tuple(map(lambda i, j: i - j, globalvars.packet['sLoc'], globalvars.packet['dLoc'] ))
-
+    print("ds: ",ds)
     #dt is the directional vector of line joining d (destination) and t (node for which backoff is calculated)
-    dt = tuple(map(lambda i, j: i - j, t, globalvars.packet['dLoc'] ))
+    dt = tuple(map(lambda i, j: i - j, t, globalvars.packet['dLoc']))
+    print("dt: ",dt)
 
     #To find: projection of vector dt_v on ds_v
 
@@ -47,22 +49,26 @@ def calculate_backoff(location):
     ds_v = np.array([ds[0],ds[1],ds[2]])
 
     # finding norm of the vector ds_v
-    ds_v_norm = np.sqrt(sum(ds_v*ds_v)) 
+    ds_v_norm = np.sqrt(sum(ds_v**2)) 
 
     # Apply the formula for projecting a vector onto another vector
     # find dot product using np.dot()
-    proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm*ds_v_norm)*ds_v
+    proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm**2)*ds_v
 
     #backoff time proportional to the distance from destination
 
-    tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dtv_on_dsv))/magnitude(ds_v) 
-
+    tB1 = (globalvars.packet['tUB1'] * proj_of_dtv_on_dsv)/ds_v 
+    #tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dtv_on_dsv))/magnitude(ds_v) 
+    print("tB1: ",tB1)
     #backoff time proportional to the distance from source-destination line
     orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
+    print("orth dist: ",orthogonal_dist)
     tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
+    print("tB2: ",tB2)
 
 
     backofftime = tB1 + tB2
+    backofftime = magnitude(backofftime)
 
     return backofftime
 
@@ -142,23 +148,149 @@ def distance(u, v):
     d = math.sqrt(dd)
     return d
 
+def distance_between_nodes(u, v, node_loc):
+    x1 = node_loc[u]['x']
+    x2 = node_loc[v]['x']
+    y1 = node_loc[u]['y']
+    y2 = node_loc[v]['y']
+    z1 = node_loc[u]['z']
+    z2 = node_loc[v]['z']
+    
+    dd = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1)
+    d = math.sqrt(dd)
+    return d
+
+def generate_random_3Dgraph(n_nodes, radius, seed=None):
+
+    if seed is not None:
+        random.seed(seed)
+   
+    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(125)]
+    n = 0
+    while n < 125:
+        for i in range(5):
+            for j in range(5):
+                for k in range(5):
+                    node_loc[n]['x'] = i
+                    node_loc[n]['y'] = j
+                    node_loc[n]['z'] = k
+                    n += 1
+
+    # Generate a dict of positions
+    #pos = {i: (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)) for i in range(n_nodes)}
+    position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
+    
+    # Create random 3D network
+    globalvars.G = nx.random_geometric_graph(n_nodes, radius, pos=position)
+
+
+
+    #wireless range: 25 to 50 feet
+    #4 units of distance is 100 feet
+
+    to_del = []
+    for u, v in combinations(globalvars.G, 2):
+      dist = distance_between_nodes(u,v,node_loc)
+      #print(dist)
+      if dist <= 0.4:
+          print("distance=",dist," : nodes are too close, removing")
+          to_del.append(u)
+          to_del.append(v)
+          continue
+      if dist >= 2:
+          pass
+      elif dist < 1:
+          globalvars.G.add_edge(u, v)
+      else:
+          p = 1 - ((dist - 1)/1)
+          q = random.uniform(0,1)
+          if q <= p:
+              globalvars.G.add_edge(u, v)
+    globalvars.G.remove_nodes_from(to_del)
+
+    return globalvars.G
+
+
+
+def network_plot_3D(G, angle, save=False):
+
+    # Get node positions
+    globalvars.pos = nx.get_node_attributes(G, 'pos')
+    
+    # Get number of nodes
+    n = G.number_of_nodes()
+
+    # Get the maximum number of edges adjacent to a single node
+    edge_max = max([G.degree(i) for i in range(n)])
+
+    # Define color range proportional to number of edges adjacent to a single node
+ #   colors = [plt.cm.plasma(G.degree(i)/edge_max) for i in range(n)] 
+
+    # 3D network plot
+    with plt.style.context(('ggplot')):
+        
+        fig = plt.figure(figsize=(10,7))
+        ax = Axes3D(fig)
+        
+        # Loop on the pos dictionary to extract the x,y,z coordinates of each node
+        for key, value in globalvars.pos.items():
+            xi = value[0]
+            yi = value[1]
+            zi = value[2]
+            
+            # Scatter plot
+            ax.scatter(xi, yi, zi, s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
+            #ax.scatter(xi, yi, zi, c=colors[key], s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
+        
+        # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
+        # Those two points are the extrema of the line to be plotted
+        for i,j in enumerate(G.edges()):
+
+            x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
+            y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
+            z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
+        
+        # Plot the connecting lines
+            ax.plot(x, y, z, c='black', alpha=0.5)
+    
+    # Set the initial view
+    ax.view_init(30, angle)
+
+    # Hide the axes
+    ax.set_axis_off()
+
+   #  if save is not False:
+   #      plt.savefig("C:\scratch\\data\"+str(angle).zfill(3)+".png")
+   #      plt.close('all')
+   #  else:
+   #       plt.show()
+    #plt.show()
+    
+    return
+
 
 def create_drones_network():
 
 
     n = globalvars.number_of_nodes  
-    m = 0  #  edges
-    seed = 20160  # seed random number generators for reproducibility
+ #   m = 0  #  edges
+ #   seed = 20160  # seed random number generators for reproducibility
 
-    # Use seed for reproducibility
+ #   # Use seed for reproducibility
 
-    globalvars.G = nx.gnm_random_graph(n, m, seed=seed)
-    globalvars.pos = nx.random_layout(globalvars.G,dim=3)
+ #   globalvars.G = nx.gnm_random_graph(n, m, seed=seed)
+ #   globalvars.pos = nx.random_layout(globalvars.G,dim=3)
+ #   x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
+ #   y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
+ #   z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]
+    G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
+    network_plot_3D(G,0, save=False)
+    
+    
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
     y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
     z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]
-  
-
+    
     #assign node id to each coordinate
     globalvars.node = [{'nodeID':0, 'loc':(0,0,0), 'packet':0} for i in range(globalvars.number_of_nodes)]
     for i in range(globalvars.number_of_nodes):
@@ -173,36 +305,37 @@ def create_drones_network():
     #create links between nodes according to wireless network
 
 
-    #Area of the drone area -- large enough to have many hops, also have sparse UAVs
-    #network_height = 1000 feet
-    #network_length = 1000 feet 
-    #network_width = 1000 feet
-    #since, points are generated inside cubic (1,1,1) distance
-    #wireless range = 50/1000 - 75/1000
-    #Minimum distance between the drones should be 10 feet,i.e., 10/1000=0.001
+  # OLD #Area of the drone area -- large enough to have many hops, also have sparse UAVs
+  #  #network_height = 1000 feet
+  #  #network_length = 1000 feet 
+  #  #network_width = 1000 feet
+  #  #since, points are generated inside cubic (1,1,1) distance
+  #  #wireless range = 50/1000 - 75/1000
+  #  #Minimum distance between the drones should be 10 feet,i.e., 10/1000=0.001
 
-    #nodes -- 250 
-    #range 90 - 250 feet
-    
+  #  #nodes -- 250 
+  #  #range 90 - 250 feet
+   #nodes 125
+   # wireless range 25 to 50 feet
 
-    to_del = []
-    for u, v in combinations(globalvars.G, 2):
-      dist = distance(u,v)
-      if dist <= 0.001:
-          print("distance=",dist," : nodes are too close, removing")
-          to_del.append(u)
-          to_del.append(v)
-          continue
-      if dist >= 0.25:
-          pass
-      elif dist < 0.09:
-          globalvars.G.add_edge(u, v)
-      else:
-          p = 1 - ((dist - 0.09)/0.16)
-          q = random.uniform(0,1)
-          if q <= p:
-              globalvars.G.add_edge(u, v)
-    globalvars.G.remove_nodes_from(to_del) 
+  #  to_del = []
+  #  for u, v in combinations(globalvars.G, 2):
+  #    dist = distance(u,v)
+  #    if dist <= 0.4:
+  #        print("distance=",dist," : nodes are too close, removing")
+  #        to_del.append(u)
+  #        to_del.append(v)
+  #        continue
+  #    if dist >= 2:
+  #        pass
+  #    elif dist < 1:
+  #        globalvars.G.add_edge(u, v)
+  #    else:
+  #        p = 1 - ((dist - 1)/1)
+  #        q = random.uniform(0,1)
+  #        if q <= p:
+  #            globalvars.G.add_edge(u, v)
+  #  globalvars.G.remove_nodes_from(to_del) 
    
     #update number of nodes
     globalvars.number_of_nodes = len(globalvars.G.nodes())
@@ -214,14 +347,14 @@ def create_drones_network():
     #    print(line)
     
     #plot the figure
-    pylab.figure(1,figsize=(10,10))
-    options = {
-    "node_color": "blue",
-    "node_size": 30,
-    "edge_color": "grey",
-    "linewidths": 0,
-    "width": 0.6,
-    }
+    #pylab.figure(1,figsize=(10,10))
+    #options = {
+    #"node_color": "blue",
+    #"node_size": 30,
+    #"edge_color": "grey",
+    #"linewidths": 0,
+    #"width": 0.6,
+    #}
 
 #    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
 #    plt.show()

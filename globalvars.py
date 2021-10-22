@@ -51,7 +51,7 @@ def init():
     now = 0
     now_e = 1
     pid = 1 #count of all packets created throughout the simulation
-    number_of_nodes = 250
+    number_of_nodes = 125
     idn = 0
     broadcast = 0
     transmission_delay = 3 #seconds
