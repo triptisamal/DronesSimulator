@@ -19,7 +19,7 @@ def init():
     global speed
     global state_vector
     pos = []
-    e = 0.6
+    e = 0.3
     focus1_key=0
     focus2_key=0
     a=0
@@ -33,7 +33,7 @@ def init():
             'myLoc':(0,0,0), #my location 
             
             #petal parameters 
-            'eccentricity':0.6, #of the segment corresponding to orbital eccentricity 
+            'eccentricity':0.3, #of the segment corresponding to orbital eccentricity 
 
             #back off time parameters
             'tUB1':0.002, #seconds;tB1 -> back-off time proportional to the distance from destination. 

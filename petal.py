@@ -129,7 +129,8 @@ def initiate_petal_parameters():
     print("Semi major axis, a = ", globalvars.a)
     globalvars.b = globalvars.a * math.sqrt(1-globalvars.e*globalvars.e)
     print("Semi minor axis, b = ", globalvars.b)
-    globalvars.c = random.uniform(globalvars.b,1)
+    globalvars.c = random.uniform(globalvars.b,globalvars.c)
+    #globalvars.c = random.uniform(globalvars.b,1)
     print("c = ",globalvars.c)
 
 
