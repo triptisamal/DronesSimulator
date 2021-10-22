@@ -49,37 +49,40 @@ def calculate_backoff(location):
     ds_v = np.array([ds[0],ds[1],ds[2]])
 
     # finding norm of the vector ds_v
-    ds_v_norm = np.sqrt(sum(ds_v**2)) 
-
+    #ds_v_norm = np.sqrt(sum(ds_v**2)) 
+    numerator = np.dot(dt_v, ds_v)
+    denominator = np.dot(ds_v, ds_v)
     # Apply the formula for projecting a vector onto another vector
     # find dot product using np.dot()
-    proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm**2)*ds_v
+    proj_of_dtv_on_dsv = np.multiply((numerator/denominator),ds_v)
+    #proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm**2)*ds_v
+    
 
+    print(proj_of_dtv_on_dsv)
+    print(ds_v)
     #backoff time proportional to the distance from destination
-
-    tB1 = (globalvars.packet['tUB1'] * proj_of_dtv_on_dsv)/ds_v 
-    #tB1 = (globalvars.packet['tUB1'] * magnitude(proj_of_dtv_on_dsv))/magnitude(ds_v) 
+    proj = magnitude(proj_of_dtv_on_dsv)
+  #  tB1 = (globalvars.packet['tUB1'] * proj_of_dtv_on_dsv)/ds_v 
+    tB1 = (globalvars.packet['tUB1'] * proj)/magnitude(ds_v) 
     print("tB1: ",tB1)
     #backoff time proportional to the distance from source-destination line
+    print("mag dt_v sq: ",(magnitude(dt_v))**2)
+    print("mag : proj_of_dtv_on_dsv sq",(magnitude(proj_of_dtv_on_dsv))**2)
     orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
     print("orth dist: ",orthogonal_dist)
     tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
-    print("tB2: ",tB2)
+  #  print("tB2: ",tB2)
 
 
     backofftime = tB1 + tB2
-    backofftime = magnitude(backofftime)
+ #   backofftime = magnitude(backofftime)
 
     return backofftime
 
 
 def insideOrNot(location):
 
-    #string processing to extract the exact x,y,z coordinates
-   # arr = locationstr.split(', ')
-   # x = float(arr[0])
-   # y = float(arr[1])
-   # z = float(arr[2])
+    #extract the exact x,y,z coordinates
 
     x = location[0]
     y = location[1]
@@ -102,9 +105,11 @@ def initiate_petal_parameters():
 
     print("PETAL PARAMETERS")
     print("----------------")
-    globalvars.focus1_key = random.choice(range(len(globalvars.pos)))
+   # globalvars.focus1_key = random.choice(range(len(globalvars.pos)))
+    globalvars.focus1_key = np.random.choice(range(len(globalvars.pos)))
     while True:
-        globalvars.focus2_key = random.choice(range(len(globalvars.pos)))
+        #globalvars.focus2_key = random.choice(range(len(globalvars.pos)))
+        globalvars.focus2_key = np.random.choice(range(len(globalvars.pos)))
         if globalvars.focus1_key != globalvars.focus2_key:
             break
     
@@ -168,16 +173,15 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     node_loc = [{'x':0, 'y':0, 'z':0} for i in range(125)]
     n = 0
     while n < 125:
-        for i in range(5):
-            for j in range(5):
-                for k in range(5):
+        for i in range(1,6):
+            for j in range(1,6):
+                for k in range(1,6):
                     node_loc[n]['x'] = i
                     node_loc[n]['y'] = j
                     node_loc[n]['z'] = k
                     n += 1
 
     # Generate a dict of positions
-    #pos = {i: (random.uniform(0, 1), random.uniform(0, 1), random.uniform(0, 1)) for i in range(n_nodes)}
     position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
     
     # Create random 3D network
@@ -273,16 +277,6 @@ def create_drones_network():
 
 
     n = globalvars.number_of_nodes  
- #   m = 0  #  edges
- #   seed = 20160  # seed random number generators for reproducibility
-
- #   # Use seed for reproducibility
-
- #   globalvars.G = nx.gnm_random_graph(n, m, seed=seed)
- #   globalvars.pos = nx.random_layout(globalvars.G,dim=3)
- #   x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
- #   y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
- #   z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
     network_plot_3D(G,0, save=False)
     
@@ -301,41 +295,6 @@ def create_drones_network():
     print("----------------")
     #print(globalvars.node)
 
-
-    #create links between nodes according to wireless network
-
-
-  # OLD #Area of the drone area -- large enough to have many hops, also have sparse UAVs
-  #  #network_height = 1000 feet
-  #  #network_length = 1000 feet 
-  #  #network_width = 1000 feet
-  #  #since, points are generated inside cubic (1,1,1) distance
-  #  #wireless range = 50/1000 - 75/1000
-  #  #Minimum distance between the drones should be 10 feet,i.e., 10/1000=0.001
-
-  #  #nodes -- 250 
-  #  #range 90 - 250 feet
-   #nodes 125
-   # wireless range 25 to 50 feet
-
-  #  to_del = []
-  #  for u, v in combinations(globalvars.G, 2):
-  #    dist = distance(u,v)
-  #    if dist <= 0.4:
-  #        print("distance=",dist," : nodes are too close, removing")
-  #        to_del.append(u)
-  #        to_del.append(v)
-  #        continue
-  #    if dist >= 2:
-  #        pass
-  #    elif dist < 1:
-  #        globalvars.G.add_edge(u, v)
-  #    else:
-  #        p = 1 - ((dist - 1)/1)
-  #        q = random.uniform(0,1)
-  #        if q <= p:
-  #            globalvars.G.add_edge(u, v)
-  #  globalvars.G.remove_nodes_from(to_del) 
    
     #update number of nodes
     globalvars.number_of_nodes = len(globalvars.G.nodes())
@@ -343,18 +302,5 @@ def create_drones_network():
     print("ADJACENCY LIST")
     print("----------------")
 
-    #for line in generate_adjlist_with_all_edges(globalvars.G,' '):
-    #    print(line)
-    
-    #plot the figure
-    #pylab.figure(1,figsize=(10,10))
-    #options = {
-    #"node_color": "blue",
-    #"node_size": 30,
-    #"edge_color": "grey",
-    #"linewidths": 0,
-    #"width": 0.6,
-    #}
-
-#    nx.draw(globalvars.G, cmap = plt.get_cmap('ocean'),**options)
-#    plt.show()
+    for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+        print(line)
