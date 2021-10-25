@@ -71,6 +71,7 @@ def calculate_backoff(location):
     orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
     print("orth dist: ",orthogonal_dist)
     tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
+    print("s d dist: ",source_destination_distance())
   #  print("tB2: ",tB2)
 
 
@@ -118,19 +119,32 @@ def initiate_petal_parameters():
     globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])
     globalvars.packet['dLoc'] = (globalvars.pos[globalvars.focus2_key][0], globalvars.pos[globalvars.focus2_key][1], globalvars.pos[globalvars.focus2_key][2])
 
-    ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
+   # ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
+
+    ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
     focaldist = math.sqrt(ff)
     print("Distance between two foci =", focaldist)
+    print("Linear eccentricity =", focaldist/2)
     print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
 
-    print("Orbital eccentricity:",globalvars.e)
+    print("Eccentricity:",globalvars.e)
     #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
-    globalvars.a = focaldist/globalvars.e
+    globalvars.a = focaldist/(2*globalvars.e)
     print("Semi major axis, a = ", globalvars.a)
-    globalvars.b = globalvars.a * math.sqrt(1-globalvars.e*globalvars.e)
+
+    ma = globalvars.a+globalvars.a
+    print("major axis, a+a = ", ma)
+    globalvars.b = globalvars.a * math.sqrt(1-(globalvars.e)**2)
     print("Semi minor axis, b = ", globalvars.b)
-    globalvars.c = random.uniform(globalvars.b,globalvars.c)
-    #globalvars.c = random.uniform(globalvars.b,1)
+    print("minor axis, b = ", globalvars.b+ globalvars.b)
+    if focaldist > ma:
+        print("incorrect")
+    #globalvars.c = random.uniform(globalvars.b,globalvars.c)
+    # a = b = c: sphere
+    # a = b > c: oblate spheroid.
+    # a = b < c: prolate spheroid
+    # a > b > c: scalene spheroid.
+    globalvars.c = random.uniform(0,globalvars.b)
     print("c = ",globalvars.c)
 
 
@@ -303,5 +317,5 @@ def create_drones_network():
     print("ADJACENCY LIST")
     print("----------------")
 
-    for line in generate_adjlist_with_all_edges(globalvars.G,' '):
-        print(line)
+  #  for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+  #      print(line)

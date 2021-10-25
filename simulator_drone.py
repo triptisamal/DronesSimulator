@@ -62,6 +62,7 @@ def node_handler(node_id, action,e):
         for s, nbrs in globalvars.G.adjacency():
             if s == node_id:
                 for t, data in nbrs.items():
+                    globalvars.copies_transmitted += 1
                     event_id = "RECEIVE_%03d" % (globalvars.idn)
                     globalvars.idn += 1
                     
@@ -220,6 +221,7 @@ def process_event(e):
             #node_handler(node_id,"INITIATE_BROADCAST",e)
         else:
             print("THE PACKET REACHED DESTINATION")
+            globalvars.copies_delivered += 1
            # for i in range(globalvars.number_of_nodes):
            #     if globalvars.state_vector[i]['node_id'] == node_id:
            #         if globalvars.state_vector[i]['receive_count'] == 1:
@@ -289,12 +291,21 @@ def main():
         print(*globalvars.event_queue,sep="\n")
 
     print("Total number of broadcasts = ",globalvars.broadcast)
+    if globalvars.copies_delivered > 0:
+        print("Copy Delivery Ratio = ",globalvars.copies_transmitted/globalvars.copies_delivered)
+    else:
+        print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
 
     original_stdout = sys.stdout
 
     with open('bcast','a') as f:
         sys.stdout = f
         print(globalvars.broadcast)
+        if globalvars.copies_delivered > 0:
+            print(globalvars.copies_transmitted/globalvars.copies_delivered)
+        else:
+            print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
+
         sys.stdout = original_stdout
 
 
