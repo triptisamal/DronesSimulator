@@ -57,7 +57,15 @@ def node_handler(node_id, action,e):
         globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
 
 
-
+        #Update state vector of the source
+        for i in range(globalvars.number_of_nodes):
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+                globalvars.state_vector[i]['packet_seen'] = 1
+                globalvars.state_vector[i]['transmitted'] = 1 #source is transmittn=ing
+                globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+                break
+        
         #Read adjacency list and create receive events
         for s, nbrs in globalvars.G.adjacency():
             if s == node_id:
@@ -129,8 +137,24 @@ def node_handler(node_id, action,e):
         for i in range(globalvars.number_of_nodes):
             if globalvars.state_vector[i]['node_id'] == node_id:
                 if globalvars.state_vector[i]['transmitted'] == 0: #transmission is pending
-                    if globalvars.state_vector[i]['receive_count'] <= 2:
-                        globalvars.state_vector[i]['transmitted'] == 1 #it should be transmitted
+                    if globalvars.protocol == 1:
+                        #if petal protocol
+                        if globalvars.state_vector[i]['receive_count'] <= 2:
+                            globalvars.state_vector[i]['transmitted'] = 1 #it should be transmitted
+                            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+                            
+                            print("Initializing broadcast")
+                            globalvars.broadcast += 1
+                            event_id = "BROADCAST_%03d" % (globalvars.idn)
+                            globalvars.idn += 1
+                            e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+                            globalvars.event_queue.append(deepcopy(e))
+                            globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+                        else:
+                            print("receive count is ",globalvars.state_vector[i]['receive_count'])
+                    if globalvars.protocol == 0:
+                        #if flooding
+                        globalvars.state_vector[i]['transmitted'] = 1 #it should be transmitted
                         globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
         
                         print("Initializing broadcast")
@@ -140,9 +164,7 @@ def node_handler(node_id, action,e):
                         e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
                         globalvars.event_queue.append(deepcopy(e))
                         globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
-                    else:
-                        print("receive count is ",globalvars.state_vector[i]['receive_count'])
-
+                break
 
 
     if action == "INITIATE_RECEIVE":
@@ -183,53 +205,68 @@ def process_event(e):
     if "RECEIVE" in e['event_id']:
         print("it is a receive event")
         
-
+        initiate_backoff_or_broadcast = 0
         
         ##it is receive event, so add a future broadcast event
         ##whoever received will create the broadcast event
         
         ## find the node id of the node where the receive happened (the same will broadcast if inside petal)
         node_id = e['node']
-        #update state vector
-        for i in range(globalvars.number_of_nodes):
-            if globalvars.state_vector[i]['node_id'] == node_id:
-                globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
-                globalvars.state_vector[i]['packet_seen'] = 1
-                globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
-                globalvars.state_vector[i]['receive_count'] += 1
-                globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
-        #print state
-        for i in range(globalvars.number_of_nodes):
-            if globalvars.state_vector[i]['node_id'] == node_id:
-                print("node id: ",globalvars.state_vector[i]['node_id'])
-                print("PID: ",globalvars.state_vector[i]['pid'])
-                print("packet seen? ",globalvars.state_vector[i]['packet_seen'])
-                print("transmitted? ",globalvars.state_vector[i]['transmitted'])
-                print("receive_count: ",globalvars.state_vector[i]['receive_count'])
-                print("time of state update: ",globalvars.state_vector[i]['time_of_state_update'])
 
 
-        #find destination id
+        #Check if already transmitted
         for i in range(globalvars.number_of_nodes):
-            if globalvars.node[i]['loc'] == globalvars.packet['dLoc']:
-                dest_id = globalvars.node[i]['nodeID']
-                break
-        #start back off timer for future broadcast only if the receiver is not destination
-        #if node_id != dest_id and globalvars.node[node_id]['packet'] == 0:
-        if node_id != dest_id:
-            node_handler(node_id,"START_BACKOFF",e)
-            #node_handler(node_id,"INITIATE_BROADCAST",e)
-        else:
-            print("THE PACKET REACHED DESTINATION")
-            globalvars.copies_delivered += 1
-           # for i in range(globalvars.number_of_nodes):
-           #     if globalvars.state_vector[i]['node_id'] == node_id:
-           #         if globalvars.state_vector[i]['receive_count'] == 1:
-           #             print("THE PACKET REACHED DESTINATION")
-           #             break
-           #         else:
-           #             print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
-           #             break
+            if globalvars.state_vector[i]['node_id'] == node_id:
+                if globalvars.state_vector[i]['transmitted'] == 1: #transmission already done once
+                    print("Already transmitted this packet once")
+                    break
+                else:
+                    initiate_backoff_or_broadcast = 1
+                    break
+
+        if initiate_backoff_or_broadcast == 1:
+            initiate_backoff_or_broadcast = 0
+            #update state vector of the pid at receiver
+            globalvars.state_vector[i]['pid'] = globalvars.packet['pID']
+            globalvars.state_vector[i]['packet_seen'] = 1
+            globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
+            globalvars.state_vector[i]['receive_count'] += 1
+            globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+            #print state
+            for i in range(globalvars.number_of_nodes):
+                if globalvars.state_vector[i]['node_id'] == node_id:
+                    print("node id: ",globalvars.state_vector[i]['node_id'])
+                    print("PID: ",globalvars.state_vector[i]['pid'])
+                    print("packet seen? ",globalvars.state_vector[i]['packet_seen'])
+                    print("transmitted? ",globalvars.state_vector[i]['transmitted'])
+                    print("receive_count: ",globalvars.state_vector[i]['receive_count'])
+                    print("time of state update: ",globalvars.state_vector[i]['time_of_state_update'])
+
+
+            #find destination id
+            for j in range(globalvars.number_of_nodes):
+                if globalvars.node[j]['loc'] == globalvars.packet['dLoc']:
+                    dest_id = globalvars.node[j]['nodeID']
+                    break
+            #start back off timer for future broadcast only if the receiver is not destination
+            #if node_id != dest_id and globalvars.node[node_id]['packet'] == 0:
+            if node_id != dest_id:
+                if globalvars.protocol == 1:
+                    node_handler(node_id,"START_BACKOFF",e)
+                if globalvars.protocol == 0:
+                    #if it is flooding, then directly broadcast
+                    node_handler(node_id,"INITIATE_BROADCAST",e)
+            else:
+                print("THE PACKET REACHED DESTINATION")
+                globalvars.copies_delivered += 1
+               # for i in range(globalvars.number_of_nodes):
+               #     if globalvars.state_vector[i]['node_id'] == node_id:
+               #         if globalvars.state_vector[i]['receive_count'] == 1:
+               #             print("THE PACKET REACHED DESTINATION")
+               #             break
+               #         else:
+               #             print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
+               #             break
 
 
 
@@ -251,10 +288,18 @@ def main():
     
     '''Simulation engine'''
     
+    #parse arguments
+    if len(sys.argv) < 2:
+        print("Usage: simulator_drone.py <protocol number>")
+        print("Flooding: 0")
+        print("Petal: 1")
+        sys.exit();
+    
     globalvars.init()
     create_drones_network()
     initiate_petal_parameters()
    
+    globalvars.protocol = int(sys.argv[1])
 
     print("EVENTS")
     print("-------")
@@ -297,18 +342,32 @@ def main():
         print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
 
     original_stdout = sys.stdout
+    if globalvars.protocol == 1:
+        with open('bcast','a') as f:
+            sys.stdout = f
+            print(globalvars.broadcast)
+            if globalvars.copies_delivered > 0:
+                print(globalvars.copies_transmitted/globalvars.copies_delivered)
+            else:
+                print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
+            print("Density of the network = ", 1000000/((globalvars.number_of_nodes*4*3.14*(25)**3)/3))
+            print("Number of nodes in the network = ", globalvars.number_of_nodes)
 
-    with open('bcast','a') as f:
-        sys.stdout = f
-        print(globalvars.broadcast)
-        if globalvars.copies_delivered > 0:
-            print(globalvars.copies_transmitted/globalvars.copies_delivered)
-        else:
-            print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
 
-        sys.stdout = original_stdout
+    if globalvars.protocol == 0:
+        with open('flood','a') as f:
+            sys.stdout = f
+            print(globalvars.broadcast)
+            if globalvars.copies_delivered > 0:
+                print(globalvars.copies_transmitted/globalvars.copies_delivered)
+            else:
+                print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
+            print("Density of the network = ", 1000000/((globalvars.number_of_nodes*4*3.14*(25)**3)/3))
+            print("Number of nodes in the network = ", globalvars.number_of_nodes)
+
+
+    sys.stdout = original_stdout
 
 
 if __name__=="__main__":
     main()
-

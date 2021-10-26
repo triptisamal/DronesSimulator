@@ -143,7 +143,7 @@ def initiate_petal_parameters():
     # a = b = c: sphere
     # a = b > c: oblate spheroid.
     # a = b < c: prolate spheroid
-    # a > b > c: scalene spheroid.
+    # a > b > c: scalene spheroid or triaxial.
     globalvars.c = random.uniform(0,globalvars.b)
     print("c = ",globalvars.c)
 
@@ -185,12 +185,17 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     if seed is not None:
         random.seed(seed)
    
-    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(125)]
+    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
+
     n = 0
-    while n < 125:
-        for i in range(1,6):
-            for j in range(1,6):
-                for k in range(1,6):
+    side = int((globalvars.number_of_nodes+1)**(1.0/3))
+    print(globalvars.number_of_nodes)
+    print(side)
+    #while n < globalvars.number_of_nodes:
+    while n < globalvars.number_of_nodes:
+        for i in range(1,side+1):
+            for j in range(1,side+1):
+                for k in range(1,side+1):
                     node_loc[n]['x'] = i
                     node_loc[n]['y'] = j
                     node_loc[n]['z'] = k
@@ -283,7 +288,7 @@ def network_plot_3D(G, angle, save=False):
    #      plt.close('all')
    #  else:
    #       plt.show()
-    #plt.show()
+  #  plt.show()
     
     return
 
