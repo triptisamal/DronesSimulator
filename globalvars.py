@@ -21,8 +21,9 @@ def init():
     global copies_transmitted
     global copies_delivered
     global protocol
+    global topology
     pos = []
-    e = 0.3
+    e = 0.4
     focus1_key=0
     focus2_key=0
     a=0
@@ -36,7 +37,7 @@ def init():
             'myLoc':(0,0,0), #my location 
             
             #petal parameters 
-            'eccentricity':0.3, #of the segment corresponding to orbital eccentricity 
+            'eccentricity':e, #of the segment corresponding to orbital eccentricity 
 
             #back off time parameters
             'tUB1':0.002, #seconds;tB1 -> back-off time proportional to the distance from destination. 
@@ -54,15 +55,17 @@ def init():
     now = 0
     now_e = 1
     pid = 1 #count of all packets created throughout the simulation
-    #number_of_nodes = 216
+   # number_of_nodes = 216
     #number_of_nodes = 125
-    number_of_nodes = 64
+    number_of_nodes = 0
+    #number_of_nodes = 64
     #number_of_nodes = 343
     idn = 0
     broadcast = 0
     transmission_delay = 3 #seconds
     speed = 299792458 #m / s
     copies_transmitted = 0
-    copies_delivered = 0
+    copies_delivered = 1
     protocol = 1
+    topology = 0
     

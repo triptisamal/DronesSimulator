@@ -9,6 +9,7 @@ def update_packet(loc):
     '''This method is for creating a packet. It is called by each source node'''
     globalvars.packet['tLoc'] = loc
     globalvars.packet['myLoc'] = loc
+    globalvars.packet['eccentricity'] = globalvars.e
 
 
 
@@ -70,7 +71,6 @@ def node_handler(node_id, action,e):
         for s, nbrs in globalvars.G.adjacency():
             if s == node_id:
                 for t, data in nbrs.items():
-                    globalvars.copies_transmitted += 1
                     event_id = "RECEIVE_%03d" % (globalvars.idn)
                     globalvars.idn += 1
                     
@@ -289,13 +289,22 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 2:
-        print("Usage: simulator_drone.py <protocol number>")
+    if len(sys.argv) < 5:
+        print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology>")
+        print("Protocol numbers:")
         print("Flooding: 0")
         print("Petal: 1")
+        print("0.1>=eccentricity<=0.9")
+        print("Topology:")
+        print("Lattice: 0")
+        print("Perturbed lattice: 1")
         sys.exit();
     
     globalvars.init()
+    globalvars.number_of_nodes = int(sys.argv[2])
+    globalvars.e = float(sys.argv[3])
+    globalvars.topology = float(sys.argv[4])
+    print("Number of nodes = ", globalvars.number_of_nodes)
     create_drones_network()
     initiate_petal_parameters()
    
@@ -343,27 +352,27 @@ def main():
 
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
-        with open('bcast','a') as f:
+        petal_numberofbcast = "petal_numberofbcast_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        petal_copies = "petal_copies_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        with open(petal_numberofbcast,'a') as f:
             sys.stdout = f
-            print(globalvars.broadcast)
+            print(globalvars.broadcast,",")
+        with open(petal_copies,'a') as f1:
+            sys.stdout = f1
             if globalvars.copies_delivered > 0:
-                print(globalvars.copies_transmitted/globalvars.copies_delivered)
-            else:
-                print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
-            print("Density of the network = ", 1000000/((globalvars.number_of_nodes*4*3.14*(25)**3)/3))
-            print("Number of nodes in the network = ", globalvars.number_of_nodes)
+                print(globalvars.copies_transmitted/globalvars.copies_delivered,",")
 
 
     if globalvars.protocol == 0:
-        with open('flood','a') as f:
+        flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
+        flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
+        with open(flood_numberofbcast,'a') as f:
             sys.stdout = f
-            print(globalvars.broadcast)
+            print(globalvars.broadcast,",")
+        with open(flood_copies,'a') as f1:
+            sys.stdout = f1
             if globalvars.copies_delivered > 0:
-                print(globalvars.copies_transmitted/globalvars.copies_delivered)
-            else:
-                print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
-            print("Density of the network = ", 1000000/((globalvars.number_of_nodes*4*3.14*(25)**3)/3))
-            print("Number of nodes in the network = ", globalvars.number_of_nodes)
+                print(globalvars.copies_transmitted/globalvars.copies_delivered,",")
 
 
     sys.stdout = original_stdout

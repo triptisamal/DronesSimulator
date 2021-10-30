@@ -106,20 +106,23 @@ def initiate_petal_parameters():
 
     print("PETAL PARAMETERS")
     print("----------------")
-   # globalvars.focus1_key = random.choice(range(len(globalvars.pos)))
-    globalvars.focus1_key = np.random.choice(range(len(globalvars.pos)))
+
+    all_position_keys = []
+    all_position_keys = list(globalvars.pos.keys())
+    #print(all_position_keys)
+    globalvars.focus1_key = np.random.choice(all_position_keys)
     while True:
-        #globalvars.focus2_key = random.choice(range(len(globalvars.pos)))
-        globalvars.focus2_key = np.random.choice(range(len(globalvars.pos)))
+        globalvars.focus2_key = np.random.choice(all_position_keys)
         if globalvars.focus1_key != globalvars.focus2_key:
             break
-    
+   
+    print("source:",globalvars.focus1_key)
+    print("destination:",globalvars.focus2_key)
     print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
     print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
     globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])
     globalvars.packet['dLoc'] = (globalvars.pos[globalvars.focus2_key][0], globalvars.pos[globalvars.focus2_key][1], globalvars.pos[globalvars.focus2_key][2])
 
-   # ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
 
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
     focaldist = math.sqrt(ff)
@@ -187,43 +190,69 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
    
     node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
 
-    n = 0
-    side = int((globalvars.number_of_nodes+1)**(1.0/3))
-    print(globalvars.number_of_nodes)
-    print(side)
-    #while n < globalvars.number_of_nodes:
-    while n < globalvars.number_of_nodes:
-        for i in range(1,side+1):
-            for j in range(1,side+1):
-                for k in range(1,side+1):
-                    node_loc[n]['x'] = i
-                    node_loc[n]['y'] = j
-                    node_loc[n]['z'] = k
-                    n += 1
+    #wireless range: 25 to 50 feet
+    #4 units of distance is 100 feet
+    #Total area is 1000 x 1000 x 1000 cubic feet
+    
+   
+    if globalvars.topology == 0: #Perfect Lattice
+        n = 0
+        side = int((globalvars.number_of_nodes+1)**(1.0/3))
+        print(globalvars.number_of_nodes)
+        print(side)
+        while n < globalvars.number_of_nodes:
+            for i in range(1,side+1):
+                for j in range(1,side+1):
+                    for k in range(1,side+1):
+                        node_loc[n]['x'] = i
+                        node_loc[n]['y'] = j
+                        node_loc[n]['z'] = k
+                        n += 1
+
+    if globalvars.topology == 1: #Perturbed Lattice
+        n = 0
+        side = int((globalvars.number_of_nodes+1)**(1.0/3))
+        print(globalvars.number_of_nodes)
+        print(side)
+        while n < globalvars.number_of_nodes:
+            for i in range(1,side+1):
+                for j in range(1,side+1):
+                    for k in range(1,side+1):
+                        perturbation = random.uniform(0,1)
+                        node_loc[n]['x'] = i + perturbation
+                        perturbation = random.uniform(0,1)
+                        node_loc[n]['y'] = j + perturbation
+                        perturbation = random.uniform(0,1)
+                        node_loc[n]['z'] = k + perturbation
+                        n += 1
+
+
 
     # Generate a dict of positions
     position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
     
     # Create random 3D network
     globalvars.G = nx.random_geometric_graph(n_nodes, radius, pos=position)
+    
+    
+    globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
+    print("Position of all nodes initially: ",globalvars.pos) 
 
 
 
-    #wireless range: 25 to 50 feet
-    #4 units of distance is 100 feet
 
     to_del = []
     for u, v in combinations(globalvars.G, 2):
       dist = distance_between_nodes(u,v,node_loc)
       #print(dist)
-      if dist <= 0.4:
+      if dist <= 0.4: #if distance is less than 10 feet
           print("distance=",dist," : nodes are too close, removing")
           to_del.append(u)
           to_del.append(v)
           continue
-      if dist >= 2:
+      if dist >= 2: #if distance is more than 50 feet
           pass
-      elif dist < 1:
+      elif dist < 1: #if distance is less than 25 feet
           globalvars.G.add_edge(u, v)
       else:
           p = 1 - ((dist - 1)/1)
@@ -231,6 +260,10 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
           if q <= p:
               globalvars.G.add_edge(u, v)
     globalvars.G.remove_nodes_from(to_del)
+
+    print("removed nodes = ",to_del)
+    print("NUMBER OF NODES = ",len(globalvars.G.nodes))
+    globalvars.number_of_nodes = globalvars.G.number_of_nodes()
 
     return globalvars.G
 
@@ -240,12 +273,11 @@ def network_plot_3D(G, angle, save=False):
 
     # Get node positions
     globalvars.pos = nx.get_node_attributes(G, 'pos')
-    
+    print("Position of all nodes: ",globalvars.pos) 
     # Get number of nodes
     n = G.number_of_nodes()
-
     # Get the maximum number of edges adjacent to a single node
-    edge_max = max([G.degree(i) for i in range(n)])
+    #edge_max = max([G.degree(i) for i in range(n)])
 
     # Define color range proportional to number of edges adjacent to a single node
  #   colors = [plt.cm.plasma(G.degree(i)/edge_max) for i in range(n)] 
@@ -288,7 +320,7 @@ def network_plot_3D(G, angle, save=False):
    #      plt.close('all')
    #  else:
    #       plt.show()
-  #  plt.show()
+    plt.show()
     
     return
 
