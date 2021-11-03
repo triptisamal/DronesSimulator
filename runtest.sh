@@ -12,6 +12,10 @@ echo "0. Flooding"
 echo "1. Petal Routing"
 read algorithm
 
+echo "Choose what topology (1/0)"
+echo "0. Lattice"
+echo "1. Perturbed Lattice"
+read topology
 
 
 if [ "$testnumber" -eq "0" ]
@@ -20,28 +24,28 @@ then
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 64 0.4
+		python3 simulator_drone.py $algorithm 64 0.4 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 125 0.4
+		python3 simulator_drone.py $algorithm 125 0.4 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 216 0.4
+		python3 simulator_drone.py $algorithm 216 0.4 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 343 0.4
+		python3 simulator_drone.py $algorithm 343 0.4 $topology 
 		c=$(( c+1 ))
 	done
 fi
@@ -53,28 +57,28 @@ then
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 125 0.4
+		python3 simulator_drone.py $algorithm 125 0.4 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 125 0.5
+		python3 simulator_drone.py $algorithm 125 0.5 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 125 0.6
+		python3 simulator_drone.py $algorithm 125 0.6 $topology 
 		c=$(( c+1 ))
 	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 125 0.7
+		python3 simulator_drone.py $algorithm 125 0.7 $topology 
 		c=$(( c+1 ))
 	done
 fi

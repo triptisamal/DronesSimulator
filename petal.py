@@ -218,11 +218,11 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
             for i in range(1,side+1):
                 for j in range(1,side+1):
                     for k in range(1,side+1):
-                        perturbation = random.uniform(0,1)
+                        perturbation = random.randint(0,1)
                         node_loc[n]['x'] = i + perturbation
-                        perturbation = random.uniform(0,1)
+                        perturbation = random.randint(0,1)
                         node_loc[n]['y'] = j + perturbation
-                        perturbation = random.uniform(0,1)
+                        perturbation = random.randint(0,1)
                         node_loc[n]['z'] = k + perturbation
                         n += 1
 
@@ -320,7 +320,7 @@ def network_plot_3D(G, angle, save=False):
    #      plt.close('all')
    #  else:
    #       plt.show()
-    plt.show()
+   # plt.show()
     
     return
 

@@ -344,14 +344,13 @@ def main():
         print("-----------------")
         print(*globalvars.event_queue,sep="\n")
 
+    print("Total number of nodes = ",globalvars.number_of_nodes)
     print("Total number of broadcasts = ",globalvars.broadcast)
-    if globalvars.copies_delivered > 0:
-        print("Copy Delivery Ratio = ",globalvars.copies_transmitted/globalvars.copies_delivered)
-    else:
-        print("copies transmitted by source = ",globalvars.copies_transmitted, "copies delivered at dest =", globalvars.copies_delivered)
+    print("Copy Delivery Ratio = ",globalvars.copies_delivered)
 
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
+        petal_numberofnodes = "petal_numberofnodes_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
         petal_numberofbcast = "petal_numberofbcast_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
         petal_copies = "petal_copies_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
         with open(petal_numberofbcast,'a') as f:
@@ -359,11 +358,14 @@ def main():
             print(globalvars.broadcast,",")
         with open(petal_copies,'a') as f1:
             sys.stdout = f1
-            if globalvars.copies_delivered > 0:
-                print(globalvars.copies_transmitted/globalvars.copies_delivered,",")
+            print(globalvars.copies_delivered,",")
+        with open(petal_numberofnodes,'a') as f2:
+            sys.stdout = f2
+            print(globalvars.number_of_nodes)
 
 
     if globalvars.protocol == 0:
+        petal_numberofnodes = "flood_numberofnodes_%d.c" % (int(sys.argv[2]))
         flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
         flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
         with open(flood_numberofbcast,'a') as f:
@@ -371,8 +373,10 @@ def main():
             print(globalvars.broadcast,",")
         with open(flood_copies,'a') as f1:
             sys.stdout = f1
-            if globalvars.copies_delivered > 0:
-                print(globalvars.copies_transmitted/globalvars.copies_delivered,",")
+            print(globalvars.copies_delivered,",")
+        with open(petal_numberofnodes,'a') as f2:
+            sys.stdout = f2
+            print(globalvars.number_of_nodes)
 
 
     sys.stdout = original_stdout
