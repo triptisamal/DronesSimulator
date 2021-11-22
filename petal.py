@@ -80,11 +80,51 @@ def calculate_backoff(location):
 
     return backofftime
 
+def find_centroid(received_from_location):
+    x = [p[0] for p in received_from_location]
+    y = [p[1] for p in received_from_location]
+    z = [p[2] for p in received_from_location]
+    centroid = (sum(x) / len(received_from_location), sum(y) / len(received_from_location), sum(z)/len(received_from_location))
+
+    print("centroid",centroid)
+
+    return centroid
+
+
+def compare_distance_to_destination(centroid,mylocation,destlocation):
+    x1 = centroid[0]
+    y1 = centroid[1]
+    z1 = centroid[2]
+
+    xd = destlocation[0]
+    yd = destlocation[1]
+    zd = destlocation[2]
+    
+    x2 = mylocation[0]
+    y2 = mylocation[1]
+    z2 = mylocation[2]
+    
+    
+    dif = ((xd - x1 )**2) + ((yd-y1)**2) + ((zd-z1)**2)
+    centroiddist = math.sqrt(dif)
+
+    dif1 = ((xd - x2)**2) + ((yd-y2)**2) + ((zd-z2)**2)
+    mydist = math.sqrt(dif1)
+    print("dist from centroid",centroiddist) 
+    print("dist from my location",mydist) 
+
+    if centroiddist > mydist:
+        return 1
+    else:
+        return 0
+
+
+
 
 def insideOrNot(location):
 
     #extract the exact x,y,z coordinates
-
+    
     x = location[0]
     y = location[1]
     z = location[2]
@@ -102,22 +142,35 @@ def insideOrNot(location):
     else:
         return 0
 
-def initiate_petal_parameters():
 
-    print("PETAL PARAMETERS")
-    print("----------------")
 
+def initiate_source_destination():
+    
+    print("SOURCE AND DESTINATION")
+    print("------------------------")
     all_position_keys = []
     all_position_keys = list(globalvars.pos.keys())
     #print(all_position_keys)
     globalvars.focus1_key = np.random.choice(all_position_keys)
+    
     while True:
         globalvars.focus2_key = np.random.choice(all_position_keys)
         if globalvars.focus1_key != globalvars.focus2_key:
             break
    
+    
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
+    initiate_petal_parameters()
+
+
+
+
+def initiate_petal_parameters():
+
+    print("PETAL PARAMETERS")
+    print("----------------")
+    
     print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
     print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
     globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])

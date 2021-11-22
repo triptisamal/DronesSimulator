@@ -22,6 +22,7 @@ def init():
     global copies_delivered
     global protocol
     global topology
+    global zone
     pos = []
     e = 0.4
     focus1_key=0
@@ -55,11 +56,7 @@ def init():
     now = 0
     now_e = 1
     pid = 1 #count of all packets created throughout the simulation
-   # number_of_nodes = 216
-    #number_of_nodes = 125
     number_of_nodes = 0
-    #number_of_nodes = 64
-    #number_of_nodes = 343
     idn = 0
     broadcast = 0
     transmission_delay = 3 #seconds
@@ -68,4 +65,5 @@ def init():
     copies_delivered = 1
     protocol = 1
     topology = 0
+    zone = 0
     

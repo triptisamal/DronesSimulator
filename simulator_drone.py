@@ -5,11 +5,26 @@ import globalvars
 import re
 import sys
 
-def update_packet(loc):
+def update_packet(action,loc):
     '''This method is for creating a packet. It is called by each source node'''
-    globalvars.packet['tLoc'] = loc
-    globalvars.packet['myLoc'] = loc
+
+    if action == "INITIATE_BROADCAST":
+        globalvars.packet['tLoc'] = loc #intermediate node
+        globalvars.packet['myLoc'] = loc #intermediate node
+
+    if action == "INITIATE_TRANSMISSION":
+        globalvars.packet['tLoc'] = loc #source node
+        globalvars.packet['myLoc'] = loc #source node, that broadcast the packet
+    
+    if action == "INITIATE_RECEIVE":
+        #whoever received, myLoc would change, but transmitter location would not
+        globalvars.packet['myLoc'] = loc #receiver, that received the packet
+
+    
     globalvars.packet['eccentricity'] = globalvars.e
+    if globalvars.zone == 1 and action == "INITIATE_RECEIVE":
+        globalvars.packet['zoneType'] = "MULTI"
+        globalvars.packet['sLoc'] = loc
 
 
 
@@ -44,7 +59,7 @@ def node_handler(node_id, action,e):
     if action == "INITIATE_TRANSMISSION":
         #This is the first node, src
         print("Source ",node_id," is creating the packet, ", globalvars.packet['pID']," at",globalvars.now, "seconds." )
-        update_packet(loc)
+        update_packet(action,loc)
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
@@ -80,14 +95,15 @@ def node_handler(node_id, action,e):
                         if globalvars.node[i]['nodeID'] == t:
                             receiverloc = globalvars.node[i]['loc']
                             break
-                    update_packet(receiverloc)
+                    #update_packet(action,receiverloc)#TODO check
                     dist = distance(s, t)
                     #convert distance to m
                     dist = 0.3048*dist
                     propagation_delay = dist/globalvars.speed
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
-
+                    
+                    #s['node'] is the node id where event receive is happening, is it is "t" here
                     e = create_event(event_id,t,globalvars.now,globalvars.packet)
                     globalvars.event_queue.append(deepcopy(e))
                     globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
@@ -95,16 +111,18 @@ def node_handler(node_id, action,e):
     
 
     if action == "START_BACKOFF":
-
+        
         #check if the node is inside petal or not
-        inside = insideOrNot(e['details']['myLoc'])
+        inside = insideOrNot(loc)
+        #inside = insideOrNot(e['details']['myLoc'])
         if inside == 1:
             globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
             print("it is inside petal")
 
             ##backoff timer start 
-            bofftime = calculate_backoff(e['details']['myLoc'])
+            bofftime = calculate_backoff(loc)
+            #bofftime = calculate_backoff(e['details']['myLoc'])
             print("Back off time =",bofftime, "seconds")
             globalvars.now = globalvars.now + bofftime
             event_id = "BACKOFFTIMEREXPIRY_%03d" % (globalvars.idn)
@@ -130,6 +148,7 @@ def node_handler(node_id, action,e):
                 print("packet seen? ",globalvars.state_vector[i]['packet_seen'])
                 print("transmitted? ",globalvars.state_vector[i]['transmitted'])
                 print("receive_count: ",globalvars.state_vector[i]['receive_count'])
+                print("received_from_location: ",globalvars.state_vector[i]['received_from_location'])
                 print("time of state update: ",globalvars.state_vector[i]['time_of_state_update'])
 
 
@@ -137,21 +156,47 @@ def node_handler(node_id, action,e):
         for i in range(globalvars.number_of_nodes):
             if globalvars.state_vector[i]['node_id'] == node_id:
                 if globalvars.state_vector[i]['transmitted'] == 0: #transmission is pending
-                    if globalvars.protocol == 1:
-                        #if petal protocol
-                        if globalvars.state_vector[i]['receive_count'] <= 2:
+                    if globalvars.protocol == 1:#if petal protocol
+                        print("receive count is ",globalvars.state_vector[i]['receive_count'])
+                        if globalvars.state_vector[i]['receive_count'] > 1:
+                            centroid = find_centroid(globalvars.state_vector[i]['received_from_location'])
+                            ret = compare_distance_to_destination(centroid,loc,globalvars.packet['dLoc'])
+                            if ret == 1:
+                            #my distance is closer to destination
+                            #if globalvars.state_vector[i]['receive_count'] <= 2:
+                                globalvars.state_vector[i]['transmitted'] = 1 #it should be transmitted
+                                globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
+                                
+
+
+                                print("Initializing broadcast")
+                                #Everytime a packet is broadcast, it should be updated with tLoc (of the node broadcasting), myLoc (of the node broadcasting), 
+                                update_packet(action,loc)
+
+
+                                globalvars.broadcast += 1
+                                event_id = "BROADCAST_%03d" % (globalvars.idn)
+                                globalvars.idn += 1
+                                e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
+                                globalvars.event_queue.append(deepcopy(e))
+                                globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
+                            else:
+                                print("My distance is farther away from destination")
+                               # print("receive count is ",globalvars.state_vector[i]['receive_count'])
+                        if globalvars.state_vector[i]['receive_count'] <= 1:
                             globalvars.state_vector[i]['transmitted'] = 1 #it should be transmitted
                             globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
-                            
+                                
                             print("Initializing broadcast")
+                            update_packet(action,loc)
                             globalvars.broadcast += 1
                             event_id = "BROADCAST_%03d" % (globalvars.idn)
                             globalvars.idn += 1
                             e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
                             globalvars.event_queue.append(deepcopy(e))
                             globalvars.event_queue = sorted(globalvars.event_queue, key=lambda x: x['time'])
-                        else:
-                            print("receive count is ",globalvars.state_vector[i]['receive_count'])
+
+
                     if globalvars.protocol == 0:
                         #if flooding
                         globalvars.state_vector[i]['transmitted'] = 1 #it should be transmitted
@@ -168,6 +213,18 @@ def node_handler(node_id, action,e):
 
 
     if action == "INITIATE_RECEIVE":
+
+        #update petal if multi zone
+        #if yes, update source node as own location, recalculate the petal
+        if globalvars.zone == 1:
+            #for s in range(globalvars.number_of_nodes):
+            #    if globalvars.node[s]['loc'] == loc:
+            #        globalvars.focus1_key = s
+            #        #whoever is broadcasting will be the new source (NOT the ones that are receiving
+            #        break
+            globalvars.focus1_key = node_id
+            print("Now the source for new petal is ",node_id)
+            initiate_petal_parameters()
         ##Look for all neighboring nodes and add events for receive
         #Read adjacency list and create receive events
         for s, nbrs in globalvars.G.adjacency():
@@ -182,7 +239,7 @@ def node_handler(node_id, action,e):
                         if globalvars.node[i]['nodeID'] == t:
                             receiverloc = globalvars.node[i]['loc']
                             break
-                    update_packet(receiverloc)
+                    update_packet(action,receiverloc)
                     dist = distance(s, t)
                     print("DISTANCE = ", dist)
                     #convert distance to m
@@ -200,6 +257,9 @@ def node_handler(node_id, action,e):
 def process_event(e):
     '''Checks what type of event is extracted, and what node initiated it
     Call node_handler for that node'''
+
+
+    print("In PROCESS EVENT: ", e)
 
 
     if "RECEIVE" in e['event_id']:
@@ -231,6 +291,7 @@ def process_event(e):
             globalvars.state_vector[i]['packet_seen'] = 1
             globalvars.state_vector[i]['transmitted'] = 0 #transmission is pending
             globalvars.state_vector[i]['receive_count'] += 1
+            globalvars.state_vector[i]['received_from_location'].append(globalvars.packet['tLoc'])
             globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
             #print state
             for i in range(globalvars.number_of_nodes):
@@ -259,14 +320,6 @@ def process_event(e):
             else:
                 print("THE PACKET REACHED DESTINATION")
                 globalvars.copies_delivered += 1
-               # for i in range(globalvars.number_of_nodes):
-               #     if globalvars.state_vector[i]['node_id'] == node_id:
-               #         if globalvars.state_vector[i]['receive_count'] == 1:
-               #             print("THE PACKET REACHED DESTINATION")
-               #             break
-               #         else:
-               #             print("DESTINATION HAS RECEIVED THE PACKET ALREADY")
-               #             break
 
 
 
@@ -289,8 +342,8 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 5:
-        print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology>")
+    if len(sys.argv) < 6:
+        print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone>")
         print("Protocol numbers:")
         print("Flooding: 0")
         print("Petal: 1")
@@ -298,22 +351,34 @@ def main():
         print("Topology:")
         print("Lattice: 0")
         print("Perturbed lattice: 1")
+        print("Single Zone: 0")
+        print("Multi zone: 1")
         sys.exit();
     
     globalvars.init()
     globalvars.number_of_nodes = int(sys.argv[2])
     globalvars.e = float(sys.argv[3])
     globalvars.topology = float(sys.argv[4])
+    globalvars.zone = float(sys.argv[5])
+    #run = int(sys.argv[6])
     print("Number of nodes = ", globalvars.number_of_nodes)
     create_drones_network()
-    initiate_petal_parameters()
+    initiate_source_destination()
    
     globalvars.protocol = int(sys.argv[1])
 
+    #running = 0
+
+   # while running < run:
+       # if running >=50:
+   #         globalvars.protocol = 0
+         #   globalvars.zone = 1
+
+    #print("SIMULATION RUN",running)
     print("EVENTS")
     print("-------")
     globalvars.event_queue = deque()
-   
+    
 
     #find the node ID of src and send to node handler
     src = 0
@@ -329,7 +394,7 @@ def main():
             break
     
     #define data structure for state for the packet id for each node
-    globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0,'receive_count':0,'time_of_update':0} for i in range(globalvars.number_of_nodes)]
+    globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0,'receive_count':0,'received_from_location':[],'time_of_update':0} for i in range(globalvars.number_of_nodes)]
 
     node_handler(src,"INITIATE_TRANSMISSION",0)
     print("\nEVENT QUEUE:\n")
@@ -351,17 +416,21 @@ def main():
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
         petal_numberofnodes = "petal_numberofnodes_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-        petal_numberofbcast = "petal_numberofbcast_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-        petal_copies = "petal_copies_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         with open(petal_numberofbcast,'a') as f:
             sys.stdout = f
-            print(globalvars.broadcast,",")
+            if globalvars.broadcast != 0:
+                print(globalvars.broadcast,",")
         with open(petal_copies,'a') as f1:
             sys.stdout = f1
-            print(globalvars.copies_delivered,",")
+            if globalvars.broadcast != 0:
+                print(globalvars.copies_delivered,",")
         with open(petal_numberofnodes,'a') as f2:
             sys.stdout = f2
             print(globalvars.number_of_nodes)
+    
+    
 
 
     if globalvars.protocol == 0:
@@ -370,7 +439,8 @@ def main():
         flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
         with open(flood_numberofbcast,'a') as f:
             sys.stdout = f
-            print(globalvars.broadcast,",")
+            if globalvars.broadcast != 0:
+                print(globalvars.broadcast,",")
         with open(flood_copies,'a') as f1:
             sys.stdout = f1
             print(globalvars.copies_delivered,",")
@@ -380,6 +450,9 @@ def main():
 
 
     sys.stdout = original_stdout
+   # globalvars.broadcast = 0
+   # globalvars.copies_delivered = 0
+   # running +=1 
 
 
 if __name__=="__main__":
