@@ -12,8 +12,216 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import math
 from mpl_toolkits.mplot3d import Axes3D
+from random import uniform
+from numpy import pi, cos, sin, arccos, arange
+import mpl_toolkits.mplot3d
+########## spherical lattice
+def ball_grid_points ( n, r, c, ng ):
+
+#*****************************************************************************80
+#
+## ball_grid_points() computes grid points inside a ball.
+#
+#  Discussion:
+#
+#    The grid is defined by specifying the radius and center of the ball,
+#    and the number of subintervals N into which the horizontal radius
+#    should be divided.  Thus, a value of N = 2 will result in 5 points
+#    along that horizontal line.
+#
+#
+#  Input:
+#
+#    integer N, the number of subintervals.
+#
+#    real R, the radius of the ball.
+#
+#    real C(3), the coordinates of the center of the ball.
+#
+#    integer NG, the number of grid points, as determined by
+#    ball_grid_count.
+#
+#  Output:
+#
+#    real BG(3,NG), the grid points inside the ball.
+#
+  import numpy as np
+
+  bg = np.zeros ( ( ng, 3 ) )
+
+  p = 0
+
+  for i in range ( 0, n + 1 ):
+
+    x = c[0] + r * float ( i ) / float ( n )
+
+    for j in range ( 0, n + 1 ):
+
+      y = c[1] + r * float ( j ) / float ( n )
+
+      for k in range ( 0, n + 1 ):
+
+        z = c[2] + r * float ( k ) / float ( n )
+
+        if ( r * r < ( x - c[0] ) ** 2 \
+                   + ( y - c[1] ) ** 2 \
+                   + ( z - c[2] ) ** 2 ):
+          break
+
+        bg[p,0] = x
+        bg[p,1] = y
+        bg[p,2] = z
+        p = p + 1
+
+        if ( 0 < i ):
+          bg[p,0] = 2.0 * c[0] - x
+          bg[p,1] = y
+          bg[p,2] = z
+          p = p + 1
+
+        if ( 0 < j ):
+          bg[p,0] = x
+          bg[p,1] = 2.0 * c[1] - y
+          bg[p,2] = z
+          p = p + 1
+
+        if ( 0 < k ):
+          bg[p,0] = x
+          bg[p,1] = y
+          bg[p,2] = 2.0 * c[2] - z
+          p = p + 1
+
+        if ( 0 < i and 0 < j ):
+          bg[p,0] = 2.0 * c[0] - x
+          bg[p,1] = 2.0 * c[1] - y
+          bg[p,2] = z
+          p = p + 1
+
+        if ( 0 < i and 0 < k ):
+          bg[p,0] = 2.0 * c[0] - x
+          bg[p,1] = y
+          bg[p,2] = 2.0 * c[2] - z
+          p = p + 1
+
+        if ( 0 < j and 0 < k ):
+          bg[p,0] = x
+          bg[p,1] = 2.0 * c[1] - y
+          bg[p,2] = 2.0 * c[2] - z
+          p = p + 1
+
+        if ( 0 < i and 0 < j and 0 < k ):
+          bg[p,0] = 2.0 * c[0] - x
+          bg[p,1] = 2.0 * c[1] - y
+          bg[p,2] = 2.0 * c[2] - z
+          p = p + 1
+
+  print("p is ",p)
+  return bg
+
+def r8mat_write ( filename, m, n, a ):
+
+#*****************************************************************************80
+#
+## r8mat_write() writes an R8MAT to a file.
+#
+#  Input:
+#
+#    string FILENAME, the name of the output file.
+#
+#    integer M, the number of rows in A.
+#
+#    integer N, the number of columns in A.
+#
+#    real A(M,N), the matrix.
+#
+  output = open ( filename, 'w' )
+
+  for i in range ( 0, m ):
+    for j in range ( 0, n ):
+      s = '  %g' % ( a[i,j] )
+      output.write ( s )
+      if j == 0:
+          globalvars.node_loc[i]['x'] = a[i,j]
+      if j == 1:
+          globalvars.node_loc[i]['y'] = a[i,j]
+      if j == 2:
+          globalvars.node_loc[i]['z'] = a[i,j]
+
+    output.write ( '\n' )
+
+  output.close ( )
+
+  return
+#def ball_grid_display ( r, c, ng, xg, filename ):
+#
+#  import matplotlib.pyplot as plt
+#  from mpl_toolkits.mplot3d import Axes3D
+#
+#  fig = plt.figure ( )
+#  ax = fig.add_subplot ( 111, projection = '3d' )
+#  ax.scatter ( xg[:,0], xg[:,1], xg[:,2], 'b' );
+#
+#  ax.set_xlabel ( '<---X--->' )
+#  ax.set_ylabel ( '<---Y--->' )
+#  ax.set_zlabel ( '<---Z--->' )
+#  ax.set_title ( 'Grid points in ball' )
+#  ax.grid ( True )
+## ax.axis ( 'equal' )
+#  plt.savefig ( filename )
+#  plt.show ( block = False )
+#
+#  plt.close ( )
+#
+#  return
+
+def ball_grid_points_test():
+
+#*****************************************************************************80
+#
+## ball_grid_points_test() tests ball_grid_points().
+#
+
+#
+  import numpy as np
+  import platform
+
+  n = 4
+  r = 2.0
+  c = np.array ( [ 1.0, 5.0, 2.0 ] )
+
+  print ( '' )
+  print ( '  We use N = %d' % ( n ) )
+  print ( '  Radius R = %g' % ( r ) )
+  print ( '  Center C = (%g,%g,%g)' % ( c[0], c[1], c[2] ) )
+
+  ng = 257
+  #ng = 389 
+ 
+  print ( '' )
+  print ( '  Number of grid points will be %d' % ( ng ) )
+
+  xg = ball_grid_points ( n, r, c, ng )
+
+  filename = 'ball_grid_points.xyz'
+
+  r8mat_write ( filename, ng, 3, xg )
+
+##  Plot the grid.
+##
+#  filename = 'ball_grid_points.png'
+#
+#  ball_grid_display ( r, c, ng, xg, filename )
+
+  return
 
 
+
+def ball_grid_test ():
+
+  import platform
+  ball_grid_points_test()
+
+#############
 def source_destination_distance():
     
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
@@ -224,13 +432,13 @@ def distance(u, v):
     d = math.sqrt(dd)
     return d
 
-def distance_between_nodes(u, v, node_loc):
-    x1 = node_loc[u]['x']
-    x2 = node_loc[v]['x']
-    y1 = node_loc[u]['y']
-    y2 = node_loc[v]['y']
-    z1 = node_loc[u]['z']
-    z2 = node_loc[v]['z']
+def distance_between_nodes(u, v):
+    x1 = globalvars.node_loc[u]['x']
+    x2 = globalvars.node_loc[v]['x']
+    y1 = globalvars.node_loc[u]['y']
+    y2 = globalvars.node_loc[v]['y']
+    z1 = globalvars.node_loc[u]['z']
+    z2 = globalvars.node_loc[v]['z']
     
     dd = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1)
     d = math.sqrt(dd)
@@ -241,26 +449,64 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     if seed is not None:
         random.seed(seed)
    
-    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
+    globalvars.node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
 
     #wireless range: 25 to 50 feet
     #4 units of distance is 100 feet
     #Total area is 1000 x 1000 x 1000 cubic feet
     
    
-    if globalvars.topology == 0: #Perfect Lattice
-        n = 0
-        side = int((globalvars.number_of_nodes+1)**(1.0/3))
-        print(globalvars.number_of_nodes)
-        print(side)
-        while n < globalvars.number_of_nodes:
-            for i in range(1,side+1):
-                for j in range(1,side+1):
-                    for k in range(1,side+1):
-                        node_loc[n]['x'] = i
-                        node_loc[n]['y'] = j
-                        node_loc[n]['z'] = k
-                        n += 1
+#    if globalvars.topology == 0: #Perfect Lattice
+#        n = 0
+#        side = int((globalvars.number_of_nodes+1)**(1.0/3))
+#        print(globalvars.number_of_nodes)
+#        print(side)
+#        while n < globalvars.number_of_nodes:
+#            for i in range(1,side+1):
+#                for j in range(1,side+1):
+#                    for k in range(1,side+1):
+#                        node_loc[n]['x'] = i
+#                        node_loc[n]['y'] = j
+#                        node_loc[n]['z'] = k
+#                        n += 1
+#
+
+#    if globalvars.topology == 2: #Spherical Lattice
+#       diameter = 6 #number of points along diameter, two consecutive points a unit distance apart
+#      # radius = diameter/2
+#       n = 0
+#
+#       while n < globalvars.number_of_nodes:
+#        ctr = diameter
+#        #points along x axis
+#        while ctr > 0:
+#            node_loc[n]['x'] = ctr
+#            node_loc[n]['y'] = 0
+#            node_loc[n]['z'] = 0
+#            ctr = ctr-1
+#            n +=1
+#        ctr = diameter
+#        #points along y axis
+#        while ctr > 0:
+#            node_loc[n]['x'] = 0
+#            node_loc[n]['y'] = ctr
+#            node_loc[n]['z'] = 0
+#            ctr = ctr-1
+#            n +=1
+#        ctr = diameter
+#        #points along x axis
+#        while ctr > 0:
+#            node_loc[n]['x'] = 0
+#            node_loc[n]['y'] = 0
+#            node_loc[n]['z'] = ctr
+#            ctr = ctr-1
+#            n +=1
+
+
+    if globalvars.topology == 2: #Spherical Lattice
+        ball_grid_test()
+
+
 
   #  if globalvars.topology == 1: #Perturbed Lattice
   #      n = 0
@@ -294,39 +540,55 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
             for i in range(1,side+1):
                 for j in range(1,side+1):
                     for k in range(1,side+1):
-                        node_loc[n]['x'] = i + noise[n]
-                        node_loc[n]['y'] = j + noise[n]
-                        node_loc[n]['z'] = k + noise[n]
+                        globalvars.node_loc[n]['x'] = i + noise[n]
+                        globalvars.node_loc[n]['y'] = j + noise[n]
+                        globalvars.node_loc[n]['z'] = k + noise[n]
                         n += 1
 
+ #   if globalvars.topology == 2: #Sphere
+ #       n = 0
+ #       print(globalvars.number_of_nodes)
+ #       while n < globalvars.number_of_nodes:
+ #           x = uniform(-1,1);
+ #           y = uniform(-1,1);
+ #           z = uniform(-1,1);
+ #           mag = math.sqrt( (x*x) + (y*y) + (z*z) );
+ #           d = uniform(0,1) / mag;
+ #           x *= d;
+ #           y *= d;
+ #           z *= d;
+ #           node_loc[n]['x'] = x
+ #           node_loc[n]['y'] = y
+ #           node_loc[n]['z'] = z
+ #           #print("x=",x,"y=",y,"z=",z)
+ #           n += 1
 
-    if globalvars.topology == 1: #Gaussian Perturbation Lattice
-            n = 0
-            side = int((globalvars.number_of_nodes+1)**(1.0/3))
-            print(globalvars.number_of_nodes)
-            print(side)
-    
-            #gaussian noise
-            mu = 0
-            sigma = 0.2
-            noise = np.random.normal(mu, sigma, [globalvars.number_of_nodes])
-            while n < globalvars.number_of_nodes:
-                for i in range(1,side+1):
-                    for j in range(1,side+1):
-                        for k in range(1,side+1):
-                            node_loc[n]['x'] = i + noise[n]
-                            node_loc[n]['y'] = j + noise[n]
-                            node_loc[n]['z'] = k + noise[n]
-                            n += 1
-
+  #  if globalvars.topology == 2: #Sphere
+  #      n = 0
+  #      while n < globalvars.number_of_nodes:
+  #          theta = uniform(0,1) * 2.0*3.14;
+  #          phi = uniform(0,1) * 3.14
+  #          r = uniform(0,1)
+  #          sinTheta = math.sin(theta)
+  #          cosTheta = math.cos(theta);
+  #          sinPhi = math.sin(phi)
+  #          cosPhi = math.cos(phi)
+  #          x = r * sinPhi * cosTheta
+  #          y = r * sinPhi * sinTheta
+  #          z = r * cosPhi
+  #          node_loc[n]['x'] = x
+  #          node_loc[n]['y'] = y
+  #          node_loc[n]['z'] = z
+  #          n += 1
 
     # Generate a dict of positions
-    position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
-    
+    position = {i: (globalvars.node_loc[i]['x'], globalvars.node_loc[i]['y'], globalvars.node_loc[i]['z']) for i in range(n_nodes)}
+
+ 
     # Create random 3D network
+   # g = nx.random_geometric_graph(n_nodes, radius, pos=position)
+   # print(g.edges())
     globalvars.G = nx.random_geometric_graph(n_nodes, radius, pos=position)
-    
-    
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
     print("Position of all nodes initially: ",globalvars.pos) 
 
@@ -335,16 +597,17 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
     to_del = []
     for u, v in combinations(globalvars.G, 2):
-      dist = distance_between_nodes(u,v,node_loc)
+      dist = distance_between_nodes(u,v)
       #print(dist)
       if dist <= 0.4: #if distance is less than 10 feet
           print("distance=",dist," : nodes are too close, removing")
           to_del.append(u)
           to_del.append(v)
           continue
-      if dist >= 2: #if distance is more than 50 feet
+      if dist >= 0.8: #if distance is more than 20 feet
           pass
-      elif dist < 1: #if distance is less than 25 feet
+      elif dist < 0.6: #if distance is less than 15 feet
+          print(dist)
           globalvars.G.add_edge(u, v)
       else:
           p = 1 - ((dist - 1)/1)
@@ -392,14 +655,14 @@ def network_plot_3D(G, angle, save=False):
         
         # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
         # Those two points are the extrema of the line to be plotted
-        for i,j in enumerate(G.edges()):
+    #    for i,j in enumerate(G.edges()):
 
-            x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
-            y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
-            z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
-        
-        # Plot the connecting lines
-            ax.plot(x, y, z, c='black', alpha=0.5)
+    #        x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
+    #        y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
+    #        z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
+    #    
+    #    # Plot the connecting lines
+    #        ax.plot(x, y, z, c='black', alpha=0.5)
     
     # Set the initial view
     ax.view_init(30, angle)
@@ -412,7 +675,7 @@ def network_plot_3D(G, angle, save=False):
    #      plt.close('all')
    #  else:
    #       plt.show()
-  #  plt.show()
+    plt.show()
     
     return
 
@@ -424,7 +687,7 @@ def create_drones_network():
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
     network_plot_3D(G,0, save=False)
     
-    
+
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
     y_nodes = [globalvars.pos[key][1] for key in globalvars.pos.keys()]
     z_nodes = [globalvars.pos[key][2] for key in globalvars.pos.keys()]

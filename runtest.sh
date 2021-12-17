@@ -14,7 +14,7 @@ read algorithm
 
 echo "Choose what topology (1/0)"
 echo "0. Lattice"
-echo "1. Perturbed Lattice"
+echo "1. Guassian Perturbed Lattice"
 read topology
 
 #echo "Choose what zone (1/0)"
@@ -25,42 +25,38 @@ read topology
 
 if [ "$testnumber" -eq "0" ]
 then
-#	c=1
-#	while [ "$c" -le "500" ]
-#	do
-#		echo "RUN $c"
-#		python3 simulator_drone.py $algorithm 64 0.4 $topology 0 
-#	#	python3 simulator_drone.py $algorithm 64 0.4 $topology 1 
-#		c=$(( c+1 ))
-#	done
-#	c=1
-#	while [ "$c" -le "500" ]
-#	do
-#		echo "RUN $c"
-#		python3 simulator_drone.py $algorithm 125 0.4 $topology 0 
-#	#	python3 simulator_drone.py $algorithm 125 0.4 $topology 1 
-#		c=$(( c+1 ))
-#	done
 	c=1
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 512 0.4 $topology 0
+		python3 simulator_drone.py $algorithm 64 0.4 $topology 0 
+	#	python3 simulator_drone.py $algorithm 64 0.4 $topology 1 
+		c=$(( c+1 ))
+	done
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		echo "RUN $c"
+		python3 simulator_drone.py $algorithm 125 0.4 $topology 0 
+	#	python3 simulator_drone.py $algorithm 125 0.4 $topology 1 
+		c=$(( c+1 ))
+	done
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		echo "RUN $c"
+		python3 simulator_drone.py $algorithm 216 0.4 $topology 0
 	#	python3 simulator_drone.py $algorithm 216 0.4 $topology 1
 		c=$(( c+1 ))
 	done
-#	c=1
-#	while [ "$c" -le "500" ]
-#	do
-#		echo "RUN $c"
-#		python3 simulator_drone.py $algorithm 512 0.4 $topology 0
-#	#	python3 simulator_drone.py $algorithm 343 0.4 $topology 1
-#		c=$(( c+1 ))
-#	done
-#	python3 simulator_drone.py $algorithm 64 0.4 $topology $zone 100
-#	python3 simulator_drone.py $algorithm 125 0.4 $topology $zone 100
-#	python3 simulator_drone.py $algorithm 216 0.4 $topology $zone 100
-#	python3 simulator_drone.py $algorithm 343 0.4 $topology $zone 100
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		echo "RUN $c"
+		python3 simulator_drone.py $algorithm 343 0.4 $topology 0
+	#	python3 simulator_drone.py $algorithm 343 0.4 $topology 1
+		c=$(( c+1 ))
+	done
 fi
 
 
