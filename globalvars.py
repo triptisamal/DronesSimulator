@@ -23,6 +23,7 @@ def init():
     global protocol
     global topology
     global zone
+    global sourcedestdistance
     pos = []
     e = 0.4
     focus1_key=0
@@ -62,8 +63,9 @@ def init():
     transmission_delay = 3 #seconds
     speed = 299792458 #m / s
     copies_transmitted = 0
-    copies_delivered = 1
+    copies_delivered = 0
     protocol = 1
     topology = 0
     zone = 0
+    sourcedestdistance = 0
     

@@ -115,7 +115,7 @@ def ball_grid_points ( n, r, c, ng ):
           bg[p,2] = 2.0 * c[2] - z
           p = p + 1
 
-  print("p is ",p)
+ # print("p is ",p)
   return bg
 
 def r8mat_write ( filename, m, n, a ):
@@ -184,18 +184,23 @@ def ball_grid_points_test():
 #
   import numpy as np
   import platform
-
+ # n = 2
   n = 4
+ # n = 16
   r = 2.0
+  #r = 4.0
+ # r = 6.0
   c = np.array ( [ 1.0, 5.0, 2.0 ] )
 
   print ( '' )
   print ( '  We use N = %d' % ( n ) )
   print ( '  Radius R = %g' % ( r ) )
   print ( '  Center C = (%g,%g,%g)' % ( c[0], c[1], c[2] ) )
-
+  
+#  ng = 33
   ng = 257
-  #ng = 389 
+ # ng = 2109
+#  ng = 17077
  
   print ( '' )
   print ( '  Number of grid points will be %d' % ( ng ) )
@@ -600,14 +605,14 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
       dist = distance_between_nodes(u,v)
       #print(dist)
       if dist <= 0.4: #if distance is less than 10 feet
-          print("distance=",dist," : nodes are too close, removing")
+         # print("distance=",dist," : nodes are too close, removing")
           to_del.append(u)
           to_del.append(v)
           continue
       if dist >= 0.8: #if distance is more than 20 feet
           pass
       elif dist < 0.6: #if distance is less than 15 feet
-          print(dist)
+       #   print(dist)
           globalvars.G.add_edge(u, v)
       else:
           p = 1 - ((dist - 1)/1)
@@ -670,11 +675,6 @@ def network_plot_3D(G, angle, save=False):
     # Hide the axes
     ax.set_axis_off()
 
-   #  if save is not False:
-   #      plt.savefig("C:\scratch\\data\"+str(angle).zfill(3)+".png")
-   #      plt.close('all')
-   #  else:
-   #       plt.show()
     plt.show()
     
     return

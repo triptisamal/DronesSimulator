@@ -63,6 +63,7 @@ def node_handler(node_id, action,e):
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
+        globalvars.broadcast += 1
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
 
@@ -415,20 +416,23 @@ def main():
 
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
-        petal_numberofnodes = "petal_numberofnodes_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
         petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         with open(petal_numberofbcast,'a') as f:
             sys.stdout = f
-            if globalvars.broadcast != 0:
-                print(globalvars.broadcast,",")
+            #if globalvars.broadcast != 0:
+            print(globalvars.broadcast,",")
         with open(petal_copies,'a') as f1:
             sys.stdout = f1
             if globalvars.broadcast != 0:
                 print(globalvars.copies_delivered,",")
-        with open(petal_numberofnodes,'a') as f2:
+        with open(petal_sourcedestdistance,'a') as f2:
             sys.stdout = f2
-            print(globalvars.number_of_nodes)
+            dis = source_destination_distance()
+            print(dis,",")
+          #  print("source:",globalvars.focus1_key,":", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2])
+          #  print("destination:",globalvars.focus2_key,":", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2])
     
     
 

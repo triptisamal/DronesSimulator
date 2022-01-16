@@ -12,12 +12,14 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 import math
 from mpl_toolkits.mplot3d import Axes3D
-
+import sys
 
 def source_destination_distance():
     
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
     focaldist = math.sqrt(ff)
+
+    globalvars.sourcedestdistance = focaldist
     
     return focaldist
 
@@ -71,7 +73,6 @@ def calculate_backoff(location):
     orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
     print("orth dist: ",orthogonal_dist)
     tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
-    print("s d dist: ",source_destination_distance())
   #  print("tB2: ",tB2)
 
 
@@ -134,7 +135,7 @@ def insideOrNot(location):
     h= (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2
     k= (globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2
     f= (globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2
-    sol = (x-h)*(x-h)/(globalvars.a*globalvars.a) + (y-k)*(y-k)/(globalvars.b*globalvars.b) + (x-f)*(x-f)/(globalvars.c*globalvars.c)
+    sol = (x-h)*(x-h)/(globalvars.a*globalvars.a) + (y-k)*(y-k)/(globalvars.b*globalvars.b) + (z-f)*(z-f)/(globalvars.c*globalvars.c)
     #semi axes are of lengths a, b, c
 
     if sol <= 1:
@@ -150,7 +151,7 @@ def initiate_source_destination():
     print("------------------------")
     all_position_keys = []
     all_position_keys = list(globalvars.pos.keys())
-    #print(all_position_keys)
+    print(all_position_keys)
     globalvars.focus1_key = np.random.choice(all_position_keys)
     
     while True:
@@ -161,6 +162,19 @@ def initiate_source_destination():
     
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
+
+    #original_stdout = sys.stdout
+    #with open("inpetalpy",'a') as fp:
+    #        sys.stdout = fp
+
+    #        dis = source_destination_distance()
+    #        print(dis,",")
+    #        print("source:",globalvars.focus1_key,":", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2])
+    #        print("destination:",globalvars.focus2_key,":", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2])
+
+    #sys.stdout = original_stdout
+
+
     initiate_petal_parameters()
 
 

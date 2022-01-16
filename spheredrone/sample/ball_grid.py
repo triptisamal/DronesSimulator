@@ -212,7 +212,7 @@ def ball_grid_display_test ( ):
   print ( '  Python version: %s' % ( platform.python_version ( ) ) )
   print ( '  ball_grid_display() displays a grid of points in a ball.' )
 
-  r = 2.0
+  r = 4.0
   c = np.array ( [ 0.0, 0.0, 0.0 ] )
   ng = 25
   xg = np.array ( [ \
@@ -393,7 +393,7 @@ def ball_grid_points_test ( ):
   print ( '  with N+1 points on a horizontal or vertical radius,' )
   print ( '  based on any ball.' )
 
-  n = 4
+  n = 16
   r = 2.0
   c = np.array ( [ 1.0, 5.0, 2.0 ] )
 
