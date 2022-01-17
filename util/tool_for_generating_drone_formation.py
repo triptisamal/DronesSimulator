@@ -25,6 +25,7 @@ a=0
 b=0
 c=0
 topology = 0
+inputtype = 0
 theta = 0
 h=0
 k=0
@@ -184,25 +185,42 @@ def initiate_source_destination():
     global positions
     global focus1_key
     global focus2_key
+    global inputtype
 
     print("SOURCE AND DESTINATION")
     print("------------------------")
     all_position_keys = []
 
     #print(positions)
+    print(inputtype)
     all_position_keys = list(positions.keys())
-    focus1_key = np.random.choice(all_position_keys)
+
     
-    while True:
-        focus2_key = np.random.choice(all_position_keys)
-        if focus1_key != focus2_key:
-            break
-   
-    #focus1_key = 23
-    #focus2_key = 70
-    #focus2_key = 24
-    focus1_key = 2
-    focus2_key = 26998
+    if inputtype == 3:
+        focus1_key = np.random.choice(all_position_keys)
+    
+        while True:
+            focus2_key = np.random.choice(all_position_keys)
+            if focus1_key != focus2_key:
+                break
+
+    if inputtype == 0:
+        f=open('input.txt')
+        lines=f.readlines()
+        focus1_key = int(lines[0])#23
+        focus2_key = int(lines[1])#24
+ 
+    if inputtype == 2:
+        f=open('input.txt')
+        lines=f.readlines()
+        focus1_key = int(lines[2])#2
+        focus2_key = int(lines[3])#26998
+    
+    if inputtype == 1:
+        f=open('input.txt')
+        lines=f.readlines()
+        focus1_key = int(lines[4])#24
+        focus2_key = int(lines[5])#34
     print("source:",focus1_key)
     print("destination:",focus2_key)
 
@@ -343,12 +361,21 @@ def create_drones_network():
 
 def main():
     global topology
+    global inputtype
 
 
-    if len(sys.argv) < 2:
-        print("Usage: latticeovoid.py <topology>")
+    if len(sys.argv) < 3:
+        print("Usage: tool_for_generating_drone_formation.py <Topology> <Input Type>")
+        print("Topology:")
+        print("Lattice: 0")
+        print("Input Type:")
+        print("S and D next to each other: 0")
+        print("S and D next faraway from each other, at the edge: 1")
+        print("S and D next faraway from each other, not at the edge: 2")
+        print("S and D next random: 3")
     
-    topology = sys.argv[1]
+    topology = int(sys.argv[1])
+    inputtype = int(sys.argv[2])
 
     create_drones_network()
     initiate_source_destination()
