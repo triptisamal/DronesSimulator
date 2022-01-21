@@ -135,8 +135,13 @@ def insideOrNot(location):
     h= (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2
     k= (globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2
     f= (globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2
-    sol = (x-h)*(x-h)/(globalvars.a*globalvars.a) + (y-k)*(y-k)/(globalvars.b*globalvars.b) + (z-f)*(z-f)/(globalvars.c*globalvars.c)
-    #semi axes are of lengths a, b, c
+
+ #   v = [positions[focus2_key][0]-positions[focus1_key][0],positions[focus2_key][1]-positions[focus1_key][1],positions[focus2_key][2]-positions[focus1_key][2]]
+ 
+    s = globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0]
+    t = globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1]
+    u = globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2]
+    sol = ((t*(f-z)-u*(k-y))**2+(u*(h-x)-s*(f-z))**2+(s*(k-y)-t*(h-x))**2)/((globalvars.b**2)*(s**2+t**2+u**2)) + ((s*(h-x)+t*(k-y)+u*(f-z))**2)/((globalvars.a**2)*(s**2+t**2+u**2))    #semi axes are of lengths a, b, c
 
     if sol <= 1:
         return 1 #inside
@@ -163,19 +168,9 @@ def initiate_source_destination():
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
 
-    #original_stdout = sys.stdout
-    #with open("inpetalpy",'a') as fp:
-    #        sys.stdout = fp
-
-    #        dis = source_destination_distance()
-    #        print(dis,",")
-    #        print("source:",globalvars.focus1_key,":", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2])
-    #        print("destination:",globalvars.focus2_key,":", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2])
-
-    #sys.stdout = original_stdout
-
 
     initiate_petal_parameters()
+    find_points_inside_ellipsoid()
 
 
 
@@ -195,16 +190,17 @@ def initiate_petal_parameters():
     focaldist = math.sqrt(ff)
     print("Distance between two foci =", focaldist)
     print("Linear eccentricity =", focaldist/2)
+
     print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
 
     print("Eccentricity:",globalvars.e)
     #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
     globalvars.a = focaldist/(2*globalvars.e)
-    print("Semi major axis, a = ", globalvars.a)
 
     ma = globalvars.a+globalvars.a
+    globalvars.c = globalvars.a * math.sqrt(1-(globalvars.e)**2)
+    print("Semi major axis, a = ", globalvars.a)
     print("major axis, a+a = ", ma)
-    globalvars.b = globalvars.a * math.sqrt(1-(globalvars.e)**2)
     print("Semi minor axis, b = ", globalvars.b)
     print("minor axis, b = ", globalvars.b+ globalvars.b)
     if focaldist > ma:
@@ -214,7 +210,7 @@ def initiate_petal_parameters():
     # a = b > c: oblate spheroid.
     # a = b < c: prolate spheroid
     # a > b > c: scalene spheroid or triaxial.
-    globalvars.c = random.uniform(0,globalvars.b)
+    globalvars.b = globalvars.c
     print("c = ",globalvars.c)
 
 
@@ -462,3 +458,14 @@ def create_drones_network():
 
   #  for line in generate_adjlist_with_all_edges(globalvars.G,' '):
   #      print(line)
+
+def find_points_inside_ellipsoid():
+
+    
+    for i in range(0,globalvars.number_of_nodes):
+        inside = insideOrNot(globalvars.node[i]['loc'])
+        if inside == 1:
+            globalvars.insidectr += 1
+    print("Total points inside the ellipsoid: ",globalvars.insidectr)
+
+

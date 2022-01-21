@@ -115,7 +115,6 @@ def node_handler(node_id, action,e):
         
         #check if the node is inside petal or not
         inside = insideOrNot(loc)
-        #inside = insideOrNot(e['details']['myLoc'])
         if inside == 1:
             globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
@@ -226,6 +225,7 @@ def node_handler(node_id, action,e):
             globalvars.focus1_key = node_id
             print("Now the source for new petal is ",node_id)
             initiate_petal_parameters()
+            
         ##Look for all neighboring nodes and add events for receive
         #Read adjacency list and create receive events
         for s, nbrs in globalvars.G.adjacency():
@@ -417,6 +417,7 @@ def main():
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
         petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
         petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         with open(petal_numberofbcast,'a') as f:
@@ -431,9 +432,9 @@ def main():
             sys.stdout = f2
             dis = source_destination_distance()
             print(dis,",")
-          #  print("source:",globalvars.focus1_key,":", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2])
-          #  print("destination:",globalvars.focus2_key,":", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2])
-    
+        with open(petal_numberinsidepetal,'a') as f3:
+            sys.stdout = f3
+            print(globalvars.insidectr,",")
     
 
 

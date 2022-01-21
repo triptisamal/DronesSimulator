@@ -24,8 +24,9 @@ def init():
     global topology
     global zone
     global sourcedestdistance
+    global insidectr
     pos = []
-    e = 0.4
+    e = 0.9
     focus1_key=0
     focus2_key=0
     a=0
@@ -68,4 +69,4 @@ def init():
     topology = 0
     zone = 0
     sourcedestdistance = 0
-    
+    insidectr = 0

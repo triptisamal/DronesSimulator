@@ -14,8 +14,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import sys
 
-#number_of_points = 216
-number_of_points = 27000
+number_of_points = 8000
 node_loc = []
 positions = {}
 focus1_key = 0
@@ -25,6 +24,7 @@ a=0
 b=0
 c=0
 topology = 0
+formation = 0
 inputtype = 0
 theta = 0
 h=0
@@ -251,16 +251,84 @@ def find_centroid(location):
 
     return centroid
 
+def make_sphere(nloc,c,r):
+   
+    cx=c[0]
+    cy=c[1]
+    cz=c[2]
+
+    global number_of_points
+    global node_loc
+    n = 0
+    for i in range(0,number_of_points):
+        sol = (nloc[i]['x']-cx )**2 + (nloc[i]['y']-cy)**2 + (nloc[i]['z']-cz)**2
+        if sol <= r**2:
+            node_loc[i]['x'] = nloc[i]['x']
+            node_loc[i]['y'] = nloc[i]['y']
+            node_loc[i]['z'] = nloc[i]['z']
+            n += 1
+    
+    np = 0
+    toremove = []
+    for i in range(0,number_of_points):
+        if node_loc[i]['x'] == 0 and node_loc[i]['y'] == 0 and node_loc[i]['z'] == 0:
+            toremove.append(i)
+            np += 1
+    
+    sorted_toremove = sorted(toremove, reverse=True)
+    for index in sorted_toremove:
+        del node_loc[index]
+
+    print("number of nodes = ", len(node_loc))
+    number_of_points = len(node_loc)
+   # print(node_loc)
+
+def make_hollow_sphere(nloc,c,r1,r2):
+   
+    cx=c[0]
+    cy=c[1]
+    cz=c[2]
+
+    global number_of_points
+    global node_loc
+    n = 0
+    for i in range(0,number_of_points):
+        sol = (nloc[i]['x']-cx )**2 + (nloc[i]['y']-cy)**2 + (nloc[i]['z']-cz)**2
+        if sol <= r1**2 and sol > r2**2:
+            node_loc[i]['x'] = nloc[i]['x']
+            node_loc[i]['y'] = nloc[i]['y']
+            node_loc[i]['z'] = nloc[i]['z']
+            n += 1
+    
+    np = 0
+    toremove = []
+    for i in range(0,number_of_points):
+        if node_loc[i]['x'] == 0 and node_loc[i]['y'] == 0 and node_loc[i]['z'] == 0:
+            toremove.append(i)
+            np += 1
+    
+    sorted_toremove = sorted(toremove, reverse=True)
+    for index in sorted_toremove:
+        del node_loc[index]
+
+    print("number of nodes = ", len(node_loc))
+    number_of_points = len(node_loc)
+   # print(node_loc)
+
+
+
 
 def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
     global node_loc
     global topology
+    global formation
+    global number_of_points
 
     if seed is not None:
         random.seed(seed)
    
-    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,number_of_points+1)]
+    node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,number_of_points)]
 
     #wireless range: 25 to 50 feet
     #4 units of distance is 100 feet
@@ -268,23 +336,73 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     
 
 
-   # if topology == 0:
-    print("topology is cuboid")
-    n = 0
-    side = int((number_of_points+1)**(1.0/3))
-    n=0
-    number_of_nodes = 0
-    while n < number_of_points:
-        for i in range(1,side+1):
-            for j in range(1,side+1):
-                for k in range(1,side+1):
-                    node_loc[n]['x'] = i
-                    node_loc[n]['y'] = j
-                    node_loc[n]['z'] = k
-                    n += 1
+    if formation == 0:
+        print("Drone formation is cuboid")
+        n = 0
+        side = int((number_of_points+1)**(1.0/3))
+        #number_of_nodes = 0
+        while n < number_of_points:
+            for i in range(1,side+1):
+                for j in range(1,side+1):
+                    for k in range(1,side+1):
+                        node_loc[n]['x'] = i
+                        node_loc[n]['y'] = j
+                        node_loc[n]['z'] = k
+                        n += 1
+        print("number of nodes = ", len(node_loc))
+
+    if formation == 1:
+        print("Drone formation is spherical")
+        n = 0
+        side = int((number_of_points+1)**(1.0/3))
+        nloc = []
+        loc = []
+        nloc = [{'x':0, 'y':0, 'z':0} for i in range(0,number_of_points+1)]
+        #number_of_nodes = 0
+        while n < number_of_points:
+            for i in range(1,side+1):
+                for j in range(1,side+1):
+                    for k in range(1,side+1):
+                        nloc[n]['x'] = i
+                        nloc[n]['y'] = j
+                        nloc[n]['z'] = k
+                        tup = (i,j,k)
+                        loc.append(tup)
+                        n += 1
+
+        centre = find_centroid(loc)
+        radius = side/2
+        make_sphere(nloc,centre,radius)
+
+    if formation == 2:
+        print("Drone formation is hollow spherical")
+        n = 0
+        side = int((number_of_points+1)**(1.0/3))
+        nloc = []
+        loc = []
+        nloc = [{'x':0, 'y':0, 'z':0} for i in range(0,number_of_points+1)]
+        #number_of_nodes = 0
+        while n < number_of_points:
+            for i in range(1,side+1):
+                for j in range(1,side+1):
+                    for k in range(1,side+1):
+                        nloc[n]['x'] = i
+                        nloc[n]['y'] = j
+                        nloc[n]['z'] = k
+                        tup = (i,j,k)
+                        loc.append(tup)
+                        n += 1
+
+        centre = find_centroid(loc)
+        radius1 = side/2
+        thickness = side/4
+        radius2 = radius1 - thickness
+        make_hollow_sphere(nloc,centre,radius1,radius2)
+    
+    n_nodes = number_of_points  
     # Generate a dict of positions
     position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
-   # print(position)
+    #print(position)
         # Create random 3D network
     G = nx.random_geometric_graph(n_nodes, radius, pos=position)
     
@@ -302,57 +420,58 @@ def network_plot_3D(G, angle,save=False):
     positions = nx.get_node_attributes(G, 'pos')
 
 
-#   # print("Position of all nodes: ",pos) 
-#  #  print("Position of all nodes: ",pos.keys()) 
-#    # Get number of nodes
-#    n = G.number_of_nodes()
-#
-#
-#    # 3D network plot
-#    with plt.style.context(('ggplot')):
-#        
-#        fig = plt.figure(figsize=(10,7))
-#        ax = Axes3D(fig)
-#        
-#        # Loop on the pos dictionary to extract the x,y,z coordinates of each node
-#        for key, value in positions.items():
-#            xi = value[0]
-#            yi = value[1]
-#            zi = value[2]
-#            
-#            # Scatter plot
-#            ax.scatter(xi, yi, zi, s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
-#            #ax.scatter(xi, yi, zi, c=colors[key], s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
-#        
-#        # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
-#        # Those two points are the extrema of the line to be plotted
-#        for i,j in enumerate(G.edges()):
-#
-#            x = np.array((positions[j[0]][0], positions[j[1]][0]))
-#            y = np.array((positions[j[0]][1], positions[j[1]][1]))
-#            z = np.array((positions[j[0]][2], positions[j[1]][2]))
-#        
-#        # Plot the connecting lines
-#            ax.plot(x, y, z, c='black', alpha=0.5)
-#    
-#    # Set the initial view
-#    ax.view_init(30, angle)
-#
-#    # Hide the axes
-#    ax.set_axis_off()
-#
-#   #  if save is not False:
-#   #      plt.savefig("C:\scratch\\data\"+str(angle).zfill(3)+".png")
-#   #      plt.close('all')
-#   #  else:
-#   #       plt.show()
-#   # plt.show()
-#    
+   # print("Position of all nodes: ",pos) 
+  #  print("Position of all nodes: ",pos.keys()) 
+    # Get number of nodes
+    n = G.number_of_nodes()
+
+
+    # 3D network plot
+  #  with plt.style.context(('ggplot')):
+  #      
+  #      fig = plt.figure(figsize=(10,7))
+  #      ax = Axes3D(fig)
+  #      
+  #      # Loop on the pos dictionary to extract the x,y,z coordinates of each node
+  #      for key, value in positions.items():
+  #          xi = value[0]
+  #          yi = value[1]
+  #          zi = value[2]
+  #          
+  #          # Scatter plot
+  #          ax.scatter(xi, yi, zi, s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
+  #          #ax.scatter(xi, yi, zi, c=colors[key], s=20+20*G.degree(key), edgecolors='k', alpha=0.7)
+  #      
+  #    #  # Loop on the list of edges to get the x,y,z, coordinates of the connected nodes
+  #    #  # Those two points are the extrema of the line to be plotted
+  #    #  for i,j in enumerate(G.edges()):
+
+  #    #      x = np.array((positions[j[0]][0], positions[j[1]][0]))
+  #    #      y = np.array((positions[j[0]][1], positions[j[1]][1]))
+  #    #      z = np.array((positions[j[0]][2], positions[j[1]][2]))
+  #    #  
+  #    #  # Plot the connecting lines
+  #    #      ax.plot(x, y, z, c='black', alpha=0.5)
+  #  
+  #  # Set the initial view
+  #  ax.view_init(30, angle)
+
+  #  # Hide the axes
+  #  ax.set_axis_off()
+
+  # #  if save is not False:
+  # #      plt.savefig("C:\scratch\\data\"+str(angle).zfill(3)+".png")
+  # #      plt.close('all')
+  # #  else:
+  # #       plt.show()
+  #  plt.show()
+    
     return
 
 
 def create_drones_network():
 
+    global number_of_points
     n = number_of_points  
     #n = number_of_nodes  
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
@@ -361,6 +480,7 @@ def create_drones_network():
 
 def main():
     global topology
+    global formation
     global inputtype
 
 
@@ -374,7 +494,7 @@ def main():
         print("S and D next faraway from each other, not at the edge: 2")
         print("S and D next random: 3")
     
-    topology = int(sys.argv[1])
+    formation = int(sys.argv[1])
     inputtype = int(sys.argv[2])
 
     create_drones_network()
