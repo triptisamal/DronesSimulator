@@ -25,6 +25,8 @@ def init():
     global zone
     global sourcedestdistance
     global insidectr
+    global sd_random
+    global iteration
     pos = []
     e = 0.9
     focus1_key=0
@@ -70,3 +72,5 @@ def init():
     zone = 0
     sourcedestdistance = 0
     insidectr = 0
+    sd_random = 1
+    iteration = 0

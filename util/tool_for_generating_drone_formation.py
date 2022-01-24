@@ -6,7 +6,7 @@ import random
 import math
 import pylab
 import numpy as np
-
+from shutil import copyfile
 from itertools import combinations
 import matplotlib.pyplot as plt
 import math
@@ -19,7 +19,7 @@ node_loc = []
 positions = {}
 focus1_key = 0
 focus2_key = 0
-e=0.9
+e=0.8
 a=0
 b=0
 c=0
@@ -170,7 +170,6 @@ def initiate_petal_parameters():
     # a = b < c: prolate spheroid
     # a > b > c: scalene spheroid or triaxial.
     b = c
-    #b = random.uniform(a,c) #[a,c)
     print("b = ",b)
 
 
@@ -205,18 +204,28 @@ def initiate_source_destination():
                 break
 
     if inputtype == 0:
+        if formation == 0:
+            copyfile('input_for_cuboid_27000.txt','input.txt')
         f=open('input.txt')
         lines=f.readlines()
         focus1_key = int(lines[0])#23
         focus2_key = int(lines[1])#24
  
     if inputtype == 2:
+        if formation == 0:
+            copyfile('input_for_cuboid_27000.txt','input.txt')
+        if formation == 2:
+            copyfile('input_for_hollowsph_3672.txt','input.txt')
         f=open('input.txt')
         lines=f.readlines()
         focus1_key = int(lines[2])#2
         focus2_key = int(lines[3])#26998
     
     if inputtype == 1:
+        if formation == 0:
+            copyfile('input_for_cuboid_27000.txt','input.txt')
+        if formation == 2:
+            copyfile('input_for_hollowsph_3672.txt','input.txt')
         f=open('input.txt')
         lines=f.readlines()
         focus1_key = int(lines[4])#24
@@ -395,8 +404,12 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
         centre = find_centroid(loc)
         radius1 = side/2
-        thickness = side/4
+        thickness = side/8
         radius2 = radius1 - thickness
+        print(radius1)
+        print(radius2)
+        print(radius1-radius2)
+        print(thickness)
         make_hollow_sphere(nloc,centre,radius1,radius2)
     
     n_nodes = number_of_points  
@@ -485,17 +498,21 @@ def main():
 
 
     if len(sys.argv) < 3:
-        print("Usage: tool_for_generating_drone_formation.py <Topology> <Input Type>")
+        print("Usage: tool_for_generating_drone_formation.py <Shape> <Input Type>")
         print("Topology:")
-        print("Lattice: 0")
+        print("Cuboid: 0")
+        print("Spherical: 1")
+        print("Howllow spherical: 2")
         print("Input Type:")
         print("S and D next to each other: 0")
         print("S and D next faraway from each other, at the edge: 1")
-        print("S and D next faraway from each other, not at the edge: 2")
+        print("S and D next faraway from each other, not at the edge (diametrically opposite for hollow sphere): 2")
         print("S and D next random: 3")
     
     formation = int(sys.argv[1])
     inputtype = int(sys.argv[2])
+
+    
 
     create_drones_network()
     initiate_source_destination()

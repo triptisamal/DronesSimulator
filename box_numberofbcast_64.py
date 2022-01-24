@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 bcast = []
-with open("petal_numberofbcast_216_0.400000_0.txt", "r") as f:
+with open("petal_numberofbcast_64_0.900000_0.txt", "r") as f:
     for line in f:
         line = line.strip()
         bcast.append(int(line))
@@ -27,13 +27,17 @@ lower_bound = q1-(1.5*iqr)
 
 outliers = arr1[(arr1 <= lower_bound) | (arr1 >= upper_bound)]
 print('The following are the outliers in the boxplot:',format(outliers))
+for i in range(len(outliers)):
+    #print(outliers[i])
+    print(np.where(arr1==outliers[i]))
 data = np.array([arr1]) 
 data = data.transpose()
-df = pd.DataFrame(data, columns = ['216'])
+df = pd.DataFrame(data, columns = ['64'])
 plt.figure(figsize=(12, 7))
-plt.title('Topology = Cubic Lattice, e = 0.9, Number of observations = 500',fontsize=16)
-plt.suptitle('Distribution of Transmissions',fontsize=24, y=1)
-plt.xlabel("Number of Nodes")
-plt.ylabel("Number of Transmissions")
+plt.title('Topology = Cubic Lattice, e = 0.9, Number of observations = 500',fontsize=23)
+plt.suptitle('Distribution of Transmissions',fontsize=25, y=1)
+plt.xlabel("Number of Nodes",fontsize=23)
+plt.ylabel("Number of Transmissions",fontsize=23)
+plt.ylim((0,22.5))
 df.boxplot(showmeans=True)
 plt.show()

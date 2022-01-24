@@ -343,8 +343,8 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 6:
-        print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone>")
+    if len(sys.argv) < 7:
+        print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone> <iteration>")
         print("Protocol numbers:")
         print("Flooding: 0")
         print("Petal: 1")
@@ -361,7 +361,7 @@ def main():
     globalvars.e = float(sys.argv[3])
     globalvars.topology = float(sys.argv[4])
     globalvars.zone = float(sys.argv[5])
-    #run = int(sys.argv[6])
+    globalvars.iteration = int(sys.argv[6])
     print("Number of nodes = ", globalvars.number_of_nodes)
     create_drones_network()
     initiate_source_destination()

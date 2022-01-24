@@ -149,6 +149,34 @@ def insideOrNot(location):
         return 0
 
 
+def write_to_file(src,dest):
+    original_stdout = sys.stdout
+    petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+    with open(petal_source,'a') as f:
+        sys.stdout = f
+        print(src)
+
+    petal_dest = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+    with open(petal_dest,'a') as f1:
+        sys.stdout = f1
+        print(dest)
+
+    sys.stdout = original_stdout
+
+
+
+def read_from_file():
+    
+    petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+    f=open(petal_source)
+    lines1=f.readlines()
+    globalvars.focus1_key = int(lines1[globalvars.iteration])
+    
+    petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
+    f1=open(petal_dest)
+    lines=f1.readlines()
+    globalvars.focus2_key = int(lines[globalvars.iteration])
+
 
 def initiate_source_destination():
     
@@ -157,14 +185,19 @@ def initiate_source_destination():
     all_position_keys = []
     all_position_keys = list(globalvars.pos.keys())
     print(all_position_keys)
-    globalvars.focus1_key = np.random.choice(all_position_keys)
+
+    if globalvars.sd_random == 1:
+        globalvars.focus1_key = np.random.choice(all_position_keys)
     
-    while True:
-        globalvars.focus2_key = np.random.choice(all_position_keys)
-        if globalvars.focus1_key != globalvars.focus2_key:
-            break
+        while True:
+            globalvars.focus2_key = np.random.choice(all_position_keys)
+            if globalvars.focus1_key != globalvars.focus2_key:
+                break
    
     
+        write_to_file(globalvars.focus1_key,globalvars.focus2_key)
+    else:
+        read_from_file()
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
 
