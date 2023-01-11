@@ -19,7 +19,17 @@ def source_destination_distance():
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
     focaldist = math.sqrt(ff)
 
-    globalvars.sourcedestdistance = focaldist
+    #globalvars.sourcedestdistance = focaldist
+
+    print("DEBUG START")
+    print("focus2 = (",globalvars.pos[globalvars.focus2_key][0],globalvars.pos[globalvars.focus2_key][1],globalvars.pos[globalvars.focus2_key][2],")")
+    print("focus1 = (",globalvars.pos[globalvars.focus1_key][0],globalvars.pos[globalvars.focus1_key][1],globalvars.pos[globalvars.focus1_key][2],")")
+    print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
+    print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
+    print("focus1=",globalvars.focus1_key)
+    print("focus2=",globalvars.focus2_key)
+   # print("s d distance",globalvars.sourcedestdistance)
+    print("DEBUG END")
     
     return focaldist
 
@@ -156,7 +166,7 @@ def write_to_file(src,dest):
         sys.stdout = f
         print(src)
 
-    petal_dest = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+    petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
     with open(petal_dest,'a') as f1:
         sys.stdout = f1
         print(dest)
@@ -165,20 +175,33 @@ def write_to_file(src,dest):
 
 
 
-def read_from_file():
+def read_from_file(choice):
+    if choice == 1:
+        petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+        f=open(petal_source)
+        lines1=f.readlines()
+
     
-    petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
-    f=open(petal_source)
-    lines1=f.readlines()
-    globalvars.focus1_key = int(lines1[globalvars.iteration])
+        globalvars.focus1_key = int(lines1[globalvars.iteration])
     
-    petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
-    f1=open(petal_dest)
-    lines=f1.readlines()
-    globalvars.focus2_key = int(lines[globalvars.iteration])
+        petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
+        f1=open(petal_dest)
+        lines=f1.readlines()
+        globalvars.focus2_key = int(lines[globalvars.iteration])
+        return 1
+
+    if choice == 2:
+        f1 = open("velocity_for_all.txt")
+        lines = f1.readline()
+        print("Velocity read from file = ",lines,"m/s")
+        return int(lines)
+        
+
 
 
 def initiate_source_destination():
+
+    ret = 0
     
     print("SOURCE AND DESTINATION")
     print("------------------------")
@@ -197,7 +220,13 @@ def initiate_source_destination():
     
         write_to_file(globalvars.focus1_key,globalvars.focus2_key)
     else:
-        read_from_file()
+        ret = read_from_file(1)
+    
+    if ret == 1:
+        print("Using source and destination from file")
+    else:
+        print("Using randomly generated source and destination")
+    
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
 
@@ -206,13 +235,36 @@ def initiate_source_destination():
     find_points_inside_ellipsoid()
 
 
-
+def calculate_current_dest(current_time,old_loc):
+    print("Calculating current location based on movement")
+    vel = read_from_file(2)
+    print("Velocity = ",vel, "m/s")
+    #position at time 0 is the initial position
+    #position at time current_time is calculated basis velocity (uniform)
+    #vel is in meters per second, current_time is in seconds
+    #assumption all nodes are moving in z direction
+    distance_travelled = vel*current_time
+    print("Current Time = ",current_time, "seconds")
+    print("Distance travelled = ",distance_travelled,"meters")
+    #find new coordinates
+    ##1 unit of distance is 25 feet or 7.62 meters
+    units = distance_travelled/7.62
+    print("Distance travelled in coordinate units = ",units)
+    print("Old coordinates = ", old_loc)
+    print("Old coordinates = ", old_loc[2])
+    change_loc = (0,0,units)
+    new_loc = [sum(x) for x in zip(old_loc,change_loc)]
+    
+    print("New coordinates = ", new_loc)
+    return new_loc
 
 def initiate_petal_parameters():
 
     print("PETAL PARAMETERS")
     print("----------------")
-    
+    print("DURING init")
+    print("focus1=",globalvars.focus1_key)
+    print("focus2=",globalvars.focus2_key)
     print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
     print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
     globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])
@@ -222,6 +274,7 @@ def initiate_petal_parameters():
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
     focaldist = math.sqrt(ff)
     print("Distance between two foci =", focaldist)
+    globalvars.sourcedestdistance = focaldist
     print("Linear eccentricity =", focaldist/2)
 
     print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
@@ -305,23 +358,6 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                         node_loc[n]['z'] = k
                         n += 1
 
-  #  if globalvars.topology == 1: #Perturbed Lattice
-  #      n = 0
-  #      side = int((globalvars.number_of_nodes+1)**(1.0/3))
-  #      print(globalvars.number_of_nodes)
-  #      print(side)
-  #      while n < globalvars.number_of_nodes:
-  #          for i in range(1,side+1):
-  #              for j in range(1,side+1):
-  #                  for k in range(1,side+1):
-  #                      perturbation = random.randint(0,1)
-  #                      node_loc[n]['x'] = i + perturbation
-  #                      perturbation = random.randint(0,1)
-  #                      node_loc[n]['y'] = j + perturbation
-  #                      perturbation = random.randint(0,1)
-  #                      node_loc[n]['z'] = k + perturbation
-  #                      n += 1
-
 
     if globalvars.topology == 1: #Gaussian Perturbation Lattice
         n = 0
@@ -399,6 +435,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     print("removed nodes = ",to_del)
     print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     globalvars.number_of_nodes = globalvars.G.number_of_nodes()
+    print("Position of all nodes after: ",globalvars.pos) 
 
     return globalvars.G
 

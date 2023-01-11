@@ -16,6 +16,7 @@ def init():
     global idn
     global broadcast
     global transmission_delay
+    global delay
     global speed
     global state_vector
     global copies_transmitted
@@ -27,6 +28,7 @@ def init():
     global insidectr
     global sd_random
     global iteration
+    
     pos = []
     e = 0.9
     focus1_key=0
@@ -64,6 +66,7 @@ def init():
     idn = 0
     broadcast = 0
     transmission_delay = 3 #seconds
+    delay = 0
     speed = 299792458 #m / s
     copies_transmitted = 0
     copies_delivered = 0

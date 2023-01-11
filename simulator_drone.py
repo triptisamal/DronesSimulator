@@ -22,6 +22,9 @@ def update_packet(action,loc):
 
     
     globalvars.packet['eccentricity'] = globalvars.e
+    if globalvars.zone == 1:
+        globalvars.packet['zoneType'] = "MULTI"
+
     if globalvars.zone == 1 and action == "INITIATE_RECEIVE":
         globalvars.packet['zoneType'] = "MULTI"
         globalvars.packet['sLoc'] = loc
@@ -99,7 +102,7 @@ def node_handler(node_id, action,e):
                     #update_packet(action,receiverloc)#TODO check
                     dist = distance(s, t)
                     #convert distance to m
-                    dist = 0.3048*dist
+                    dist = 0.3048*25*dist
                     propagation_delay = dist/globalvars.speed
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
@@ -224,7 +227,14 @@ def node_handler(node_id, action,e):
             #        break
             globalvars.focus1_key = node_id
             print("Now the source for new petal is ",node_id)
+            #Change destination as well
+            curr_dest = calculate_current_dest(globalvars.now,globalvars.packet['dLoc'])
+            #curr_dest is the modified coordinates
+            globalvars.packet['dLoc'] = curr_dest
             initiate_petal_parameters()
+
+            #after calculating the petal, all locations are updated
+            #update_all_position()
             
         ##Look for all neighboring nodes and add events for receive
         #Read adjacency list and create receive events
@@ -244,7 +254,7 @@ def node_handler(node_id, action,e):
                     dist = distance(s, t)
                     print("DISTANCE = ", dist)
                     #convert distance to m
-                    dist = 0.3048*dist
+                    dist = 25*0.3048*dist
                     propagation_delay = dist/globalvars.speed
                     time = globalvars.transmission_delay + propagation_delay 
                     globalvars.now = globalvars.now + time
@@ -320,7 +330,12 @@ def process_event(e):
                     node_handler(node_id,"INITIATE_BROADCAST",e)
             else:
                 print("THE PACKET REACHED DESTINATION")
+                print("now time ",globalvars.now)
                 globalvars.copies_delivered += 1
+                #find total delay
+                if globalvars.copies_delivered == 1:
+                    globalvars.delay = globalvars.now
+                print("tot delay ",globalvars.delay)
 
 
 
@@ -363,6 +378,7 @@ def main():
     globalvars.zone = float(sys.argv[5])
     globalvars.iteration = int(sys.argv[6])
     print("Number of nodes = ", globalvars.number_of_nodes)
+
     create_drones_network()
     initiate_source_destination()
    
@@ -383,6 +399,8 @@ def main():
 
     #find the node ID of src and send to node handler
     src = 0
+    des = 0
+    print("Total number of nodes = ",globalvars.number_of_nodes)
     for i in range(globalvars.number_of_nodes):
         if globalvars.node[i]['loc'] == (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2]):
             src = globalvars.node[i]['nodeID'] = i
@@ -396,6 +414,7 @@ def main():
     
     #define data structure for state for the packet id for each node
     globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0,'receive_count':0,'received_from_location':[],'time_of_update':0} for i in range(globalvars.number_of_nodes)]
+    print("Packet data structure = ",globalvars.state_vector)
 
     node_handler(src,"INITIATE_TRANSMISSION",0)
     print("\nEVENT QUEUE:\n")
@@ -413,28 +432,34 @@ def main():
     print("Total number of nodes = ",globalvars.number_of_nodes)
     print("Total number of broadcasts = ",globalvars.broadcast)
     print("Copy Delivery Ratio = ",globalvars.copies_delivered)
-
+    print("Total delay = ",globalvars.delay, "seconds (", (globalvars.delay/60), " minutes)")
+    sddistance = globalvars.sourcedestdistance
+    print("Distance between source and destination = ",0.3048*25*sddistance)
     original_stdout = sys.stdout
     if globalvars.protocol == 1:
         petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-        petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-        petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-        petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-        with open(petal_numberofbcast,'a') as f:
-            sys.stdout = f
+        #petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        #petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        #petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        #with open(petal_numberofbcast,'a') as f:
+        #    sys.stdout = f
             #if globalvars.broadcast != 0:
-            print(globalvars.broadcast,",")
-        with open(petal_copies,'a') as f1:
-            sys.stdout = f1
-            if globalvars.broadcast != 0:
-                print(globalvars.copies_delivered,",")
+        #    print(globalvars.broadcast,",")
+        #with open(petal_copies,'a') as f1:
+        #    sys.stdout = f1
+        #    if globalvars.broadcast != 0:
+        #        print(globalvars.copies_delivered,",")
         with open(petal_sourcedestdistance,'a') as f2:
             sys.stdout = f2
-            dis = source_destination_distance()
+            dis = globalvars.sourcedestdistance
             print(dis,",")
-        with open(petal_numberinsidepetal,'a') as f3:
-            sys.stdout = f3
-            print(globalvars.insidectr,",")
+        #with open(petal_numberinsidepetal,'a') as f3:
+        #   sys.stdout = f3
+        #   print(globalvars.insidectr,",")
+        petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        with open(petal_delay,'a') as f4:
+           sys.stdout = f4
+           print(globalvars.delay,",")
     
 
 

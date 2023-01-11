@@ -4,6 +4,7 @@
 echo "Choose what test scenario (1/0)"
 echo "0. Effect of increase in number of nodes"
 echo "1. Effect of increase in eccentricity"
+echo "2. Check delay related"
 read testnumber
 
 
@@ -21,6 +22,19 @@ read topology
 #echo "0. Single"
 #echo "1. Multi"
 #read zone
+
+
+if [ "$testnumber" -eq "2" ]
+then
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		echo "RUN $c"
+		python3 simulator_drone.py $algorithm 216 0.7 $topology 1 $c 
+		c=$(( c+1 ))
+	done
+fi
+
 
 
 if [ "$testnumber" -eq "0" ]
