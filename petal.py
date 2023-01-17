@@ -14,6 +14,20 @@ import math
 from mpl_toolkits.mplot3d import Axes3D
 import sys
 
+
+
+
+
+def update_all_position(current_time):
+    print("Updating the positions (coordinates) of all the nodes after moving")
+    for i in range(globalvars.number_of_nodes):
+        units = get_displacement(current_time)
+        change_loc = (0,0,units)
+        globalvars.pos[i] = [sum(x) for x in zip(globalvars.pos[i],change_loc)]
+        globalvars.node[i]['loc'] = globalvars.pos[i]
+#        print(globalvars.pos[i]) 
+
+
 def source_destination_distance():
     
     ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])*(globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])+(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])*(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])*(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])
@@ -193,7 +207,7 @@ def read_from_file(choice):
     if choice == 2:
         f1 = open("velocity_for_all.txt")
         lines = f1.readline()
-        print("Velocity read from file = ",lines,"m/s")
+    #    print("Velocity read from file = ",lines,"m/s")
         return int(lines)
         
 
@@ -230,35 +244,38 @@ def initiate_source_destination():
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
 
-
-    initiate_petal_parameters()
+    #Initiating petal parameters for the first time
+    initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
     find_points_inside_ellipsoid()
 
-
-def calculate_current_dest(current_time,old_loc):
-    print("Calculating current location based on movement")
+def get_displacement(current_time):
     vel = read_from_file(2)
-    print("Velocity = ",vel, "m/s")
     #position at time 0 is the initial position
     #position at time current_time is calculated basis velocity (uniform)
     #vel is in meters per second, current_time is in seconds
     #assumption all nodes are moving in z direction
     distance_travelled = vel*current_time
-    print("Current Time = ",current_time, "seconds")
-    print("Distance travelled = ",distance_travelled,"meters")
+    #print("Current Time = ",current_time, "seconds")
+    #print("Distance travelled = ",distance_travelled,"meters")
     #find new coordinates
     ##1 unit of distance is 25 feet or 7.62 meters
     units = distance_travelled/7.62
+   
+    return units
+
+
+def calculate_current_dest(current_time,old_loc):
+    print("Calculating current location based on movement")
+    units = get_displacement(current_time)
     print("Distance travelled in coordinate units = ",units)
     print("Old coordinates = ", old_loc)
-    print("Old coordinates = ", old_loc[2])
     change_loc = (0,0,units)
     new_loc = [sum(x) for x in zip(old_loc,change_loc)]
     
     print("New coordinates = ", new_loc)
     return new_loc
 
-def initiate_petal_parameters():
+def initiate_petal_parameters(choice):
 
     print("PETAL PARAMETERS")
     print("----------------")
@@ -267,12 +284,31 @@ def initiate_petal_parameters():
     print("focus2=",globalvars.focus2_key)
     print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
     print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
-    globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])
-    globalvars.packet['dLoc'] = (globalvars.pos[globalvars.focus2_key][0], globalvars.pos[globalvars.focus2_key][1], globalvars.pos[globalvars.focus2_key][2])
+    
+    #At the start of algorithm
+    if choice == globalvars.PetalParamType.INIT.value:
+        globalvars.packet['sLoc'] = (globalvars.pos[globalvars.focus1_key][0], globalvars.pos[globalvars.focus1_key][1], globalvars.pos[globalvars.focus1_key][2])
+        globalvars.packet['dLoc'] = (globalvars.pos[globalvars.focus2_key][0], globalvars.pos[globalvars.focus2_key][1], globalvars.pos[globalvars.focus2_key][2])
+
+        ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
+        focaldist = math.sqrt(ff)
 
 
-    ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
-    focaldist = math.sqrt(ff)
+    #when the destination is updated, in case of diverged petal algorithm
+
+    if choice == globalvars.PetalParamType.MODIFY.value:
+        print("updating s and d")
+        #New petal will have the current location of destination, 
+        #but old location of source
+        print("Source: ",globalvars.packet['sLoc'])
+        print("Destination: ",globalvars.packet['dLoc'])
+   
+
+        ff = (globalvars.packet['dLoc'][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.packet['dLoc'][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.packet['dLoc'][2]-globalvars.pos[globalvars.focus1_key][2])**2
+        focaldist = math.sqrt(ff)
+
+
+
     print("Distance between two foci =", focaldist)
     globalvars.sourcedestdistance = focaldist
     print("Linear eccentricity =", focaldist/2)

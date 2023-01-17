@@ -1,9 +1,11 @@
 from collections import deque
 from copy import deepcopy
-from petal import *
-import globalvars
 import re
 import sys
+
+from petal import *
+import globalvars
+
 
 def update_packet(action,loc):
     '''This method is for creating a packet. It is called by each source node'''
@@ -231,10 +233,15 @@ def node_handler(node_id, action,e):
             curr_dest = calculate_current_dest(globalvars.now,globalvars.packet['dLoc'])
             #curr_dest is the modified coordinates
             globalvars.packet['dLoc'] = curr_dest
-            initiate_petal_parameters()
+            
+            #all locations are updated
+            update_all_position(globalvars.now)
+            print("All positions updated")
+            
+            #petal is updated with new destination but old source
+            initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
 
-            #after calculating the petal, all locations are updated
-            #update_all_position()
+
             
         ##Look for all neighboring nodes and add events for receive
         #Read adjacency list and create receive events
@@ -316,7 +323,9 @@ def process_event(e):
 
 
             #find destination id
+            print("Printing location of all nodes")
             for j in range(globalvars.number_of_nodes):
+                print(globalvars.node[j]['loc'])
                 if globalvars.node[j]['loc'] == globalvars.packet['dLoc']:
                     dest_id = globalvars.node[j]['nodeID']
                     break

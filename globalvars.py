@@ -1,3 +1,13 @@
+
+from enum import Enum
+
+#class definition 
+class PetalParamType(Enum):
+    INIT = 1
+    MODIFY = 2
+
+
+#function definition
 def init():
     global pos
     global e
