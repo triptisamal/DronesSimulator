@@ -6,7 +6,11 @@ class PetalParamType(Enum):
     INIT = 1
     MODIFY = 2
 
-
+class MobilityModel(Enum):
+    NO_MOVEMENT = 0
+    PRESERVE_FORM = 1
+    MODIFY_FORM = 2
+    
 #function definition
 def init():
     global pos
@@ -38,6 +42,10 @@ def init():
     global insidectr
     global sd_random
     global iteration
+    global save_old_source
+    global packet_reached_dest
+    global s
+    global d
     
     pos = []
     e = 0.9
@@ -85,5 +93,9 @@ def init():
     zone = 0
     sourcedestdistance = 0
     insidectr = 0
-    sd_random = 1
+    sd_random = 0
     iteration = 0
+    save_old_source = (0,0,0)
+    packet_reached_dest = 0
+    s=0
+    d=0

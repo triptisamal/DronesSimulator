@@ -22,15 +22,19 @@ read topology
 #echo "0. Single"
 #echo "1. Multi"
 #read zone
-
+echo "Choose what mobility model (2/1/0)"
+echo "0. No mobility"
+echo "1. All nodes moving with same velocity"
+echo "2. Some nodes moving with same velocity"
+read mobility
 
 if [ "$testnumber" -eq "2" ]
 then
-	c=1
+	c=37
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 216 0.7 $topology 1 $c 
+		python3 simulator_drone.py $algorithm 64 0.7 $topology 1 $mobility $c 
 		c=$(( c+1 ))
 	done
 fi

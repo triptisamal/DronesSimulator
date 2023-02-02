@@ -3,29 +3,93 @@ import plotly.graph_objects as go
 import networkx as nx
 from networkx import grid_graph
 import random
+from random import randint
 import math
 import globalvars
 import pylab
 import numpy as np
+
 
 from itertools import combinations
 import matplotlib.pyplot as plt
 import math
 from mpl_toolkits.mplot3d import Axes3D
 import sys
+import time
 
 
-
+def check_collision(node_loc):
+    
+    
+    for u, v in combinations(globalvars.G, 2):
+        
+        dist = distance_between_nodes(u,v,node_loc)
+        #print(dist)
+        if dist <= 0.4: #if distance is less than 10 feet
+            print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+            #to_del.append(u)
+            #to_del.append(v)
+            z_v = avoid_collision(u,v,node_loc)
+            #update position of v
+            
+            index = int(v)
+            posi = list(globalvars.pos[v])
+            posi[2] = z_v
+            globalvars.pos[v] = tuple(posi)
+            
+            #also update node_loc
+            node_loc[v]['z'] = z_v
+            #distance is 10 feet
+            globalvars.G.add_edge(u, v)
+            continue
 
 
 def update_all_position(current_time):
-    print("Updating the positions (coordinates) of all the nodes after moving")
-    for i in range(globalvars.number_of_nodes):
-        units = get_displacement(current_time)
-        change_loc = (0,0,units)
-        globalvars.pos[i] = [sum(x) for x in zip(globalvars.pos[i],change_loc)]
-        globalvars.node[i]['loc'] = globalvars.pos[i]
-#        print(globalvars.pos[i]) 
+    print("Updating at time: ", current_time)
+    
+    
+    if int(sys.argv[6]) == globalvars.MobilityModel.PRESERVE_FORM.value:
+        print("Updating the positions (coordinates) of all the nodes after moving")
+        for i in range(globalvars.number_of_nodes):
+            units = get_displacement(current_time)
+            change_loc = (0,0,units)
+            #find destination i to update the packet
+            if globalvars.pos[i] == globalvars.packet['dLoc']:
+                #Change destination in packet 
+                curr_dest = calculate_current_dest(current_time,globalvars.packet['dLoc'])
+                #curr_dest is the modified coordinates
+                globalvars.packet['dLoc'] = curr_dest
+                print("Updated destination globalvars.packet['dLoc']: ",globalvars.packet['dLoc'])
+            
+            globalvars.pos[i] = [sum(x) for x in zip(globalvars.pos[i],change_loc)]
+            globalvars.node[i]['loc'] = globalvars.pos[i]
+            if globalvars.packet['dLoc'] == globalvars.node[i]['loc']:
+                print("YES packet dLoc is same as dest node loc")
+#           print(globalvars.pos[i]) 
+
+    if int(sys.argv[6]) == globalvars.MobilityModel.MODIFY_FORM.value:
+        print("Updating the positions (coordinates) of the nodes that are moving (not all nodes are moving)")
+        for i in range(globalvars.number_of_nodes):  
+            move_yes_or_no = randint(0,1)
+            if move_yes_or_no == 1:
+                units = get_displacement(current_time)
+                change_loc = (0,0,units)
+                #find destination i to update the packet
+                print("globalvars.pos[i] = ",globalvars.pos[i])
+                print("globalvars.packet['dLoc']",globalvars.packet['dLoc'])
+                if globalvars.pos[i] == globalvars.packet['dLoc']:
+                    #Change destination in packet 
+                    curr_dest = calculate_current_dest(current_time,globalvars.packet['dLoc'])
+                    #curr_dest is the modified coordinates
+                    globalvars.packet['dLoc'] = curr_dest
+                    print("Updated destination globalvars.packet['dLoc']: ",globalvars.packet['dLoc'])
+                
+                globalvars.pos[i] = [sum(x) for x in zip(globalvars.pos[i],change_loc)]
+                globalvars.node[i]['loc'] = globalvars.pos[i]
+                #check is packet dLoc is same as dest node loc; it should be same
+                if globalvars.packet['dLoc'] == globalvars.node[i]['loc']:
+                    print("YES packet dLoc is same as dest node loc")
+#           print(globalvars.pos[i])
 
 
 def source_destination_distance():
@@ -55,6 +119,9 @@ def calculate_backoff(location):
 
     '''returns backoff time in seconds'''
 
+    validtB1 = 0
+    validtB2 = 0
+    proj_valid =0
     ##extract the exact x,y,z coordinates
     x = location[0]
     y = location[1]
@@ -80,27 +147,58 @@ def calculate_backoff(location):
     denominator = np.dot(ds_v, ds_v)
     # Apply the formula for projecting a vector onto another vector
     # find dot product using np.dot()
-    proj_of_dtv_on_dsv = np.multiply((numerator/denominator),ds_v)
-    #proj_of_dtv_on_dsv = (np.dot(dt_v, ds_v)/ds_v_norm**2)*ds_v
+    
+    print("numerator:", numerator)
+    print("denominator:",denominator)
+    
+   # time.sleep(2.4)
+    if denominator:
+        proj_of_dtv_on_dsv = np.multiply((numerator/denominator),ds_v)
+        print(proj_of_dtv_on_dsv)
+        proj_valid = 1
+    #The above gives runtimewarning: invalid value encountered in double_scalars
+    
     
 
-    print(proj_of_dtv_on_dsv)
+        print(proj_of_dtv_on_dsv)
     print(ds_v)
     #backoff time proportional to the distance from destination
-    proj = magnitude(proj_of_dtv_on_dsv)
-  #  tB1 = (globalvars.packet['tUB1'] * proj_of_dtv_on_dsv)/ds_v 
-    tB1 = (globalvars.packet['tUB1'] * proj)/magnitude(ds_v) 
-    print("tB1: ",tB1)
+    if proj_valid:
+        proj = magnitude(proj_of_dtv_on_dsv)
+    else:
+        proj = 0
+ 
+    try:
+        tB1 = (globalvars.packet['tUB1'] * proj)/magnitude(ds_v) 
+        print("tB1: ",tB1)
+        validtB1 = 1
+    except ZeroDivisionError:
+        print("tB1 is inf")
+        print("magnitude(ds_v):", magnitude(ds_v))
+        print("globalvars.packet['tUB1'] * proj:",globalvars.packet['tUB1'] * proj)
+        
     #backoff time proportional to the distance from source-destination line
     print("mag dt_v sq: ",(magnitude(dt_v))**2)
-    print("mag : proj_of_dtv_on_dsv sq",(magnitude(proj_of_dtv_on_dsv))**2)
-    orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
+    #print("mag : proj_of_dtv_on_dsv sq",(magnitude(proj_of_dtv_on_dsv))**2)
+    print("mag : proj_of_dtv_on_dsv sq",(proj)**2)
+    #orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
+    orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (proj)**2)
     print("orth dist: ",orthogonal_dist)
-    tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
-  #  print("tB2: ",tB2)
 
+    try:
+        tB2 = (globalvars.packet['tUB2'] * orthogonal_dist)/source_destination_distance() 
+        print("tB2: ",tB2)
+        validtB2 = 1
+    except ZeroDivisionError:
+        print("tB2 is inf")
+        print("globalvars.packet['tUB2'] * orthogonal_dist:",globalvars.packet['tUB2'] * orthogonal_dist)
+        print("source_destination_distance():", source_destination_distance())
+ 
 
-    backofftime = tB1 + tB2
+    if validtB2 == 1 and validtB1 ==1:
+        backofftime = tB1 + tB2
+    else:
+        backofftime = 0
  #   backofftime = magnitude(backofftime)
 
     return backofftime
@@ -175,12 +273,12 @@ def insideOrNot(location):
 
 def write_to_file(src,dest):
     original_stdout = sys.stdout
-    petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+    petal_source = "petal_source.txt" 
     with open(petal_source,'a') as f:
         sys.stdout = f
         print(src)
 
-    petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
+    petal_dest = "petal_dest.txt" 
     with open(petal_dest,'a') as f1:
         sys.stdout = f1
         print(dest)
@@ -191,14 +289,14 @@ def write_to_file(src,dest):
 
 def read_from_file(choice):
     if choice == 1:
-        petal_source = "petal_source_%d.txt" % (globalvars.number_of_nodes)
+        petal_source = "petal_source.txt" 
         f=open(petal_source)
         lines1=f.readlines()
 
     
         globalvars.focus1_key = int(lines1[globalvars.iteration])
     
-        petal_dest = "petal_dest_%d.txt" % (globalvars.number_of_nodes)
+        petal_dest = "petal_dest.txt"
         f1=open(petal_dest)
         lines=f1.readlines()
         globalvars.focus2_key = int(lines[globalvars.iteration])
@@ -231,8 +329,10 @@ def initiate_source_destination():
             if globalvars.focus1_key != globalvars.focus2_key:
                 break
    
-    
-        write_to_file(globalvars.focus1_key,globalvars.focus2_key)
+        globalvars.s = globalvars.focus1_key
+        globalvars.d = globalvars.focus2_key
+        
+        #write_to_file(globalvars.focus1_key,globalvars.focus2_key)
     else:
         ret = read_from_file(1)
     
@@ -300,11 +400,11 @@ def initiate_petal_parameters(choice):
         print("updating s and d")
         #New petal will have the current location of destination, 
         #but old location of source
-        print("Source: ",globalvars.packet['sLoc'])
+        print("globalvars.packet['sLoc']: ",globalvars.packet['sLoc'])
         print("Destination: ",globalvars.packet['dLoc'])
-   
+        print("Source: ",globalvars.save_old_source)
 
-        ff = (globalvars.packet['dLoc'][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.packet['dLoc'][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.packet['dLoc'][2]-globalvars.pos[globalvars.focus1_key][2])**2
+        ff = (globalvars.packet['dLoc'][0]-globalvars.save_old_source[0])**2 +(globalvars.packet['dLoc'][1]-globalvars.save_old_source[1])**2+(globalvars.packet['dLoc'][2]-globalvars.save_old_source[2])**2
         focaldist = math.sqrt(ff)
 
 
@@ -356,6 +456,28 @@ def distance(u, v):
     d = math.sqrt(dd)
     return d
 
+
+def avoid_collision(u, v, node_loc):
+    
+    #Adjust distance such that the nodes u and v have a minimu of 10 feet (0.4 euclidean) distance between them
+    adjusted_distance = 0.4
+    temp = adjusted_distance*adjusted_distance
+    x1 = node_loc[u]['x']
+    x2 = node_loc[v]['x']
+    y1 = node_loc[u]['y']
+    y2 = node_loc[v]['y']
+    z1 = node_loc[u]['z']
+    z2 = node_loc[v]['z']
+    
+    #Changing position of v
+    #temp = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2_new-z1)*(z2_new-z1)
+    z2_new = math.sqrt(temp-((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)))+z1
+    
+    print("Old z:",z2)
+    print("New z:",z2_new)
+    return z2_new
+    
+    
 def distance_between_nodes(u, v, node_loc):
     x1 = node_loc[u]['x']
     x2 = node_loc[v]['x']
@@ -445,30 +567,54 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
     print("Position of all nodes initially: ",globalvars.pos) 
 
-
-
-
-    to_del = []
+    #to_del = []
     for u, v in combinations(globalvars.G, 2):
-      dist = distance_between_nodes(u,v,node_loc)
-      #print(dist)
-      if dist <= 0.4: #if distance is less than 10 feet
-          print("distance=",dist," : nodes are too close, removing")
-          to_del.append(u)
-          to_del.append(v)
-          continue
-      if dist >= 2: #if distance is more than 50 feet
-          pass
-      elif dist < 1: #if distance is less than 25 feet
-          globalvars.G.add_edge(u, v)
-      else:
-          p = 1 - ((dist - 1)/1)
-          q = random.uniform(0,1)
-          if q <= p:
-              globalvars.G.add_edge(u, v)
-    globalvars.G.remove_nodes_from(to_del)
+        
+        dist = distance_between_nodes(u,v,node_loc)
+        #print(dist)
+        if dist <= 0.4: #if distance is less than 10 feet
+            print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+            #to_del.append(u)
+            #to_del.append(v)
+            z_v = avoid_collision(u,v,node_loc)
+            #update position of v
+            
+            index = int(v)
+            posi = list(globalvars.pos[v])
+            posi[2] = z_v
+            globalvars.pos[v] = tuple(posi)
+            
+            #also update node_loc
+            node_loc[v]['z'] = z_v
+            #distance is 10 feet
+            globalvars.G.add_edge(u, v)
+            continue
+        if dist >= 2: #if distance is more than 50 feet
+            pass
+        elif dist < 1: #if distance is less than 25 feet
+            globalvars.G.add_edge(u, v)
+        else:
+            p = 1 - ((dist - 1)/1)
+            q = random.uniform(0,1)
+            if q <= p:
+                globalvars.G.add_edge(u, v)
+    #globalvars.G.remove_nodes_from(to_del)
 
-    print("removed nodes = ",to_del)
+
+#Temporary code for sanity check
+    found = 0
+    for u, v in combinations(globalvars.G, 2):
+        dist = distance_between_nodes(u,v,node_loc)
+        if dist < 0.4:
+            print("Distance between",u,v,"is less than 0.4; check code")
+            found = 1
+    
+    if found == 0:
+        print("Distance sanity check passed")
+       
+        
+        
+    #print("removed nodes = ",to_del)
     print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     globalvars.number_of_nodes = globalvars.G.number_of_nodes()
     print("Position of all nodes after: ",globalvars.pos) 
