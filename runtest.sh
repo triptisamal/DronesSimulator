@@ -30,7 +30,7 @@ read mobility
 
 if [ "$testnumber" -eq "2" ]
 then
-	c=28
+	c=0
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
