@@ -362,7 +362,7 @@ def process_event(e):
                 #find total delay
                 if globalvars.copies_delivered == 1:
                     globalvars.delay = globalvars.now
-                print("tot delay ",globalvars.delay)
+                    print("tot delay ",globalvars.delay)
 
 
 
@@ -385,7 +385,7 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 8:
+    if len(sys.argv) < 7:
         print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone> <mobility model> <iteration>")
         print("Protocol numbers:")
         print("Flooding: 0")
@@ -404,10 +404,11 @@ def main():
     globalvars.topology = float(sys.argv[4])
     globalvars.zone = float(sys.argv[5])
     globalvars.iteration = int(sys.argv[7])
+    print("ITERATION = ", globalvars.iteration)
     print("Number of nodes = ", globalvars.number_of_nodes)
     if int(sys.argv[6]) == 0:
         print("Nodes are not moving")
-    elif int(sys.argv[6]) == 0:
+    elif int(sys.argv[6]) == 1:
         print("All nodes moving with the same velocity")
     else:
         print("Some nodes moving with the same velocity") 

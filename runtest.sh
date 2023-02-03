@@ -30,11 +30,12 @@ read mobility
 
 if [ "$testnumber" -eq "2" ]
 then
-	c=37
+	c=28
 	while [ "$c" -le "500" ]
 	do
 		echo "RUN $c"
-		python3 simulator_drone.py $algorithm 64 0.7 $topology 1 $mobility $c 
+		#multi-zone
+		python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c
 		c=$(( c+1 ))
 	done
 fi
