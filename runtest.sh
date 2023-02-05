@@ -35,7 +35,7 @@ then
 	do
 		echo "RUN $c"
 		#multi-zone
-		python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c
+		python3 simulator_drone.py $algorithm 216 0.4 $topology 1 $mobility $c
 		c=$(( c+1 ))
 	done
 fi
