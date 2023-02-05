@@ -93,7 +93,7 @@ def init():
     zone = 0
     sourcedestdistance = 0
     insidectr = 0
-    sd_random = 0
+    sd_random = 1
     iteration = 0
     save_old_source = (0,0,0)
     packet_reached_dest = 0
