@@ -538,7 +538,7 @@ margin = se/2;
 //In the formula, ‾X represents the sample mean, Z represents the Z-value you get from the normal standard distribution, S is the population standard deviation and n represents the sample size you're surveying.
 float ci_upper = mean+0.99*(sd/sqrt(TOTAL));
 float ci_lower = mean-0.99*(sd/sqrt(TOTAL));
-float ci = 2*0.99*(sd/sqrt(TOTAL));
+float ci = 0.99*(sd/sqrt(TOTAL));
 printf("ci = (%f,%f)\n",ci_lower,ci_upper);
 printf("ci=%f\n",ci);
 
