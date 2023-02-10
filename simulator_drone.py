@@ -389,7 +389,7 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 7:
+    if len(sys.argv) < 8:
         print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone> <mobility model> <iteration>")
         print("Protocol numbers:")
         print("Flooding: 0")
@@ -400,9 +400,11 @@ def main():
         print("Perturbed lattice: 1")
         print("Single Zone: 0")
         print("Multi zone: 1")
+        print("Last argument: 0 or 1 for globalvars.sd_random")
         sys.exit();
     
     globalvars.init()
+    globalvars.protocol = int(sys.argv[1])
     globalvars.number_of_nodes = int(sys.argv[2])
     globalvars.e = float(sys.argv[3])
     globalvars.topology = float(sys.argv[4])
@@ -416,18 +418,10 @@ def main():
         print("All nodes moving with the same velocity")
     else:
         print("Some nodes moving with the same velocity") 
-          
+    globalvars.sd_random = int(sys.argv[8])    
     create_drones_network()
     initiate_source_destination()
    
-    globalvars.protocol = int(sys.argv[1])
-
-    #running = 0
-
-   # while running < run:
-       # if running >=50:
-   #         globalvars.protocol = 0
-         #   globalvars.zone = 1
 
     #print("SIMULATION RUN",running)
     print("EVENTS")
@@ -501,7 +495,7 @@ def main():
             with open(petal_delay,'a') as f4:
                 sys.stdout = f4
                 print(globalvars.delay,",")
-            write_to_file(globalvars.s,globalvars.d)
+            write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
         sys.stdout = original_stdout
     
 
@@ -520,6 +514,9 @@ def main():
         with open(petal_numberofnodes,'a') as f2:
             sys.stdout = f2
             print(globalvars.number_of_nodes)
+        write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+        sys.stdout = original_stdout
+        print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
 
 
     

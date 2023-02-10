@@ -271,14 +271,23 @@ def insideOrNot(location):
         return 0
 
 
-def write_to_file(src,dest):
+def write_to_file(src,dest,protocol):
     original_stdout = sys.stdout
-    petal_source = "petal_source.txt" 
+    
+    if protocol == 0:
+        petal_source = "flood_source.txt" 
+        petal_dest = "flood_dest.txt"
+    else:
+        petal_source = "petal_source.txt" 
+        petal_dest = "petal_dest.txt"
+         
+        
+        
     with open(petal_source,'a') as f:
         sys.stdout = f
         print(src)
 
-    petal_dest = "petal_dest.txt" 
+    
     with open(petal_dest,'a') as f1:
         sys.stdout = f1
         print(dest)
@@ -288,22 +297,33 @@ def write_to_file(src,dest):
 
 
 def read_from_file(choice):
+    
+    #reading s and d
     if choice == 1:
-        petal_source = "petal_source.txt" 
+        petal_source = "petal_source_all500.txt" 
         f=open(petal_source)
         lines1=f.readlines()
+        
+        if globalvars.protocol ==0:
+            print("iteration for flooding: ",globalvars.iteration) 
+        else:
+            print("iteration for petal: ",globalvars.iteration) 
 
+        globalvars.focus1_key = int(lines1[globalvars.iteration-1])
     
-        globalvars.focus1_key = int(lines1[globalvars.iteration])
-    
-        petal_dest = "petal_dest.txt"
+        petal_dest = "petal_dest_all500.txt"
         f1=open(petal_dest)
         lines=f1.readlines()
-        globalvars.focus2_key = int(lines[globalvars.iteration])
+        globalvars.focus2_key = int(lines[globalvars.iteration-1])
+        
+        globalvars.s = globalvars.focus1_key
+        globalvars.d = globalvars.focus2_key
         return 1
 
+
+    #reading velocity
     if choice == 2:
-        f1 = open("velocity_for_all.txt")
+        f1 = open("velocity_for_all")
         lines = f1.readline()
     #    print("Velocity read from file = ",lines,"m/s")
         return int(lines)
@@ -317,6 +337,7 @@ def initiate_source_destination():
     
     print("SOURCE AND DESTINATION")
     print("------------------------")
+    print("protocol: ",globalvars.protocol);
     all_position_keys = []
     all_position_keys = list(globalvars.pos.keys())
     print(all_position_keys)
@@ -333,6 +354,21 @@ def initiate_source_destination():
         globalvars.d = globalvars.focus2_key
         
         #write_to_file(globalvars.focus1_key,globalvars.focus2_key)
+        #Temporary code: collect all s-d numbers, to check whether flooding works 
+        # for those where petal does not work
+        original_stdout = sys.stdout
+        petal_source = "petal_source_all500.txt" 
+        with open(petal_source,'a') as f:
+            sys.stdout = f
+            print(globalvars.focus1_key)
+
+        petal_dest = "petal_dest_all500.txt" 
+        with open(petal_dest,'a') as f1:
+            sys.stdout = f1
+            print(globalvars.focus2_key)
+
+        sys.stdout = original_stdout
+        
     else:
         ret = read_from_file(1)
     
@@ -565,7 +601,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     
     
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
-    print("Position of all nodes initially: ",globalvars.pos) 
+  #  print("Position of all nodes initially: ",globalvars.pos) 
 
     #to_del = []
     for u, v in combinations(globalvars.G, 2):
@@ -617,7 +653,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     #print("removed nodes = ",to_del)
     print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     globalvars.number_of_nodes = globalvars.G.number_of_nodes()
-    print("Position of all nodes after: ",globalvars.pos) 
+    #print("Position of all nodes after: ",globalvars.pos) 
 
     return globalvars.G
 
