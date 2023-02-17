@@ -1,4 +1,12 @@
-180 ,
+#include<stdio.h>
+#include<math.h>
+#define TOTAL 498
+
+int main(){
+
+	int sum = 0;
+
+	int arr[TOTAL]={180 ,
 64 ,
 114 ,
 23 ,
@@ -303,7 +311,6 @@
 30 ,
 204 ,
 145 ,
-56 ,
 213 ,
 7 ,
 33 ,
@@ -414,7 +421,6 @@
 77 ,
 100 ,
 55 ,
-96 ,
 18 ,
 123 ,
 198 ,
@@ -497,4 +503,44 @@
 66 ,
 109 ,
 147 ,
-57 ,
+57 };
+
+
+for (int i=0;i<TOTAL;i++){
+	sum += arr[i];
+}
+
+float mean = 0;
+mean=sum/TOTAL;
+printf("Average:%f\n",mean);
+
+float summ=0;
+for (int i=0;i<TOTAL;i++){
+	summ += pow((arr[i]-mean),2);
+}
+float sd=0;
+sd = sqrt(summ/TOTAL);
+printf("Standard Deviation:%f\n",sd);
+//https://www.indeed.com/career-advice/career-development/how-to-calculate-confidence-interval
+//standard error
+float se=0;
+se = sd/TOTAL;
+
+
+//margin of error
+float margin=0;
+margin = se/2;
+
+//confidence interval or z-value 99%
+//    Confidence interval (CI) = ‾X ± Z(S ÷ √n)
+
+//In the formula, ‾X represents the sample mean, Z represents the Z-value you get from the normal standard distribution, S is the population standard deviation and n represents the sample size you're surveying.
+float ci_upper = mean+0.99*(sd/sqrt(TOTAL));
+float ci_lower = mean-0.99*(sd/sqrt(TOTAL));
+float ci = 0.99*(sd/sqrt(TOTAL));
+printf("ci = (%f,%f)\n",ci_lower,ci_upper);
+printf("ci=%f\n",ci);
+
+
+return 0;
+}

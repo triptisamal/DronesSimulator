@@ -1,6 +1,6 @@
 #include<stdio.h>
 #include<math.h>
-#define TOTAL 500
+#define TOTAL 496
 
 int main(){
 
@@ -502,11 +502,12 @@ int main(){
 1 ,
 8 ,
 24 ,
-18 ,
-31 ,
-6 ,
-1 ,
-12 };
+18 //,
+//31 ,
+//6 ,
+//1 ,
+//12
+ };
 
 for (int i=0;i<TOTAL;i++){
 	sum += arr[i];

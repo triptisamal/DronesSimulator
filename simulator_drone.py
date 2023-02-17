@@ -500,23 +500,23 @@ def main():
     
 
 
-    if globalvars.protocol == 0:
-        petal_numberofnodes = "flood_numberofnodes_%d.c" % (int(sys.argv[2]))
-        flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
-        flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
-        with open(flood_numberofbcast,'a') as f:
-            sys.stdout = f
-            if globalvars.broadcast != 0:
-                print(globalvars.broadcast,",")
-        with open(flood_copies,'a') as f1:
-            sys.stdout = f1
-            print(globalvars.copies_delivered,",")
-        with open(petal_numberofnodes,'a') as f2:
-            sys.stdout = f2
-            print(globalvars.number_of_nodes)
-        write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
-        sys.stdout = original_stdout
-        print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
+        if globalvars.protocol == 0:
+            petal_numberofnodes = "flood_numberofnodes_%d.c" % (int(sys.argv[2]))
+            flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
+            flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
+            with open(flood_numberofbcast,'a') as f:
+                sys.stdout = f
+                if globalvars.broadcast != 0:
+                    print(globalvars.broadcast,",")
+            with open(flood_copies,'a') as f1:
+                sys.stdout = f1
+                print(globalvars.copies_delivered,",")
+            with open(petal_numberofnodes,'a') as f2:
+                sys.stdout = f2
+                print(globalvars.number_of_nodes)
+            write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+            sys.stdout = original_stdout
+            print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
 
 
     

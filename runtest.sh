@@ -32,127 +32,127 @@ fi
 
 if [ "$testnumber" -eq "2" ]
 then
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 64 0.4 1 1 1 $c 1
-		python3 simulator_drone.py 0 64 0.4 1 1 1 $c 0
-		c=$(( c+1 ))
-	done
-
-	#move files
-	mv petal_source.txt model1/64
-	mv petal_dest.txt model1/64
-	mv flood_source.txt model1/64
-	mv flood_dest.txt model1/64
-	mv *500* model1/64
-	mv *.c model1/64
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 125 0.4 1 1 1 $c 1
-		python3 simulator_drone.py 0 125 0.4 1 1 1 $c 0
-		c=$(( c+1 ))
-	done
-		#move files
-	mv petal_source.txt model1/125
-	mv petal_dest.txt model1/125
-	mv flood_source.txt model1/125
-	mv flood_dest.txt model1/125
-	mv *500* model1/125
-	mv *.c model1/125
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 216 0.4 1 1 1 $c 1
-		python3 simulator_drone.py 0 216 0.4 1 1 1 $c 0
-		c=$(( c+1 ))
-	done
-	#move files
-	mv petal_source.txt model1/216
-	mv petal_dest.txt model1/216
-	mv flood_source.txt model1/216
-	mv flood_dest.txt model1/216
-	mv *500* model1/216
-	mv *.c model1/216
-	#mobility 2
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 64 0.4 1 1 2 $c 1
-		python3 simulator_drone.py 0 64 0.4 1 1 2 $c 0
-		c=$(( c+1 ))
-	done
-		#move files
-	mv petal_source.txt model2/64
-	mv petal_dest.txt model2/64
-	mv flood_source.txt model2/64
-	mv flood_dest.txt model2/64
-	mv *500* model2/64
-	mv *.c model2/64
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 125 0.4 1 1 2 $c 1
-		python3 simulator_drone.py 0 125 0.4 1 1 2 $c 0
-		c=$(( c+1 ))
-	done
-		#move files
-	mv petal_source.txt model2/125
-	mv petal_dest.txt model2/125
-	mv flood_source.txt model2/125
-	mv flood_dest.txt model2/125
-	mv *500* model2/125
-	mv *.c model2/125
-	c=1
-	while [ "$c" -le "500" ]
-	do
-	#	echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 216 0.4 1 1 2 $c 1
-		python3 simulator_drone.py 0 216 0.4 1 1 2 $c 0
-		c=$(( c+1 ))
-	done
-		#move files
-	mv petal_source.txt model2/216
-	mv petal_dest.txt model2/216
-	mv flood_source.txt model2/216
-	mv flood_dest.txt model2/216
-	mv *500* model2/216
-	mv *.c model2/216
-	c=1
-	while [ "$c" -le "500" ]
-	do
-		echo "RUN $c"
-		#multi-zone
-		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
-		python3 simulator_drone.py 1 343 0.4 1 1 2 $c 1
-		python3 simulator_drone.py 0 343 0.4 1 1 2 $c 0
-		c=$(( c+1 ))
-	done
-		#move files
-	mv petal_source.txt model2/343
-	mv petal_dest.txt model2/343
-	mv flood_source.txt model2/343
-	mv flood_dest.txt model2/343
-	mv *500* model2/343
-	mv *.c model2/343
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 64 0.4 1 1 1 $c 1
+#		python3 simulator_drone.py 0 64 0.4 1 1 1 $c 0
+#		c=$(( c+1 ))
+#	done
+#
+#	#move files
+#	mv petal_source.txt model1/64
+#	mv petal_dest.txt model1/64
+#	mv flood_source.txt model1/64
+#	mv flood_dest.txt model1/64
+#	mv *500* model1/64
+#	mv *.c model1/64
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 125 0.4 1 1 1 $c 1
+#		python3 simulator_drone.py 0 125 0.4 1 1 1 $c 0
+#		c=$(( c+1 ))
+#	done
+#		#move files
+#	mv petal_source.txt model1/125
+#	mv petal_dest.txt model1/125
+#	mv flood_source.txt model1/125
+#	mv flood_dest.txt model1/125
+#	mv *500* model1/125
+#	mv *.c model1/125
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 216 0.4 1 1 1 $c 1
+#		python3 simulator_drone.py 0 216 0.4 1 1 1 $c 0
+#		c=$(( c+1 ))
+#	done
+#	#move files
+#	mv petal_source.txt model1/216
+#	mv petal_dest.txt model1/216
+#	mv flood_source.txt model1/216
+#	mv flood_dest.txt model1/216
+#	mv *500* model1/216
+#	mv *.c model1/216
+#	#mobility 2
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 64 0.4 1 1 2 $c 1
+#		python3 simulator_drone.py 0 64 0.4 1 1 2 $c 0
+#		c=$(( c+1 ))
+#	done
+#		#move files
+#	mv petal_source.txt model2/64
+#	mv petal_dest.txt model2/64
+#	mv flood_source.txt model2/64
+#	mv flood_dest.txt model2/64
+#	mv *500* model2/64
+#	mv *.c model2/64
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 125 0.4 1 1 2 $c 1
+#		python3 simulator_drone.py 0 125 0.4 1 1 2 $c 0
+#		c=$(( c+1 ))
+#	done
+#		#move files
+#	mv petal_source.txt model2/125
+#	mv petal_dest.txt model2/125
+#	mv flood_source.txt model2/125
+#	mv flood_dest.txt model2/125
+#	mv *500* model2/125
+#	mv *.c model2/125
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#	#	echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 216 0.4 1 1 2 $c 1
+#		python3 simulator_drone.py 0 216 0.4 1 1 2 $c 0
+#		c=$(( c+1 ))
+#	done
+#		#move files
+#	mv petal_source.txt model2/216
+#	mv petal_dest.txt model2/216
+#	mv flood_source.txt model2/216
+#	mv flood_dest.txt model2/216
+#	mv *500* model2/216
+#	mv *.c model2/216
+#	c=1
+#	while [ "$c" -le "500" ]
+#	do
+#		echo "RUN $c"
+#		#multi-zone
+#		#python3 simulator_drone.py $algorithm 64 0.4 $topology 1 $mobility $c $sd_random
+#		python3 simulator_drone.py 1 343 0.4 1 1 2 $c 1
+#		python3 simulator_drone.py 0 343 0.4 1 1 2 $c 0
+#		c=$(( c+1 ))
+#	done
+#		#move files
+#	mv petal_source.txt model2/343
+#	mv petal_dest.txt model2/343
+#	mv flood_source.txt model2/343
+#	mv flood_dest.txt model2/343
+#	mv *500* model2/343
+#	mv *.c model2/343
 	#mobility1
 	c=1
 	while [ "$c" -le "500" ]
