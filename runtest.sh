@@ -8,7 +8,7 @@ echo "2. Check mobility"
 echo "3. Check petal vs flooding"
 read testnumber
 
-if [ "$testnumber" -ne "2" ]
+if [ "$testnumber" -ne "2" or "$testnumber" -ne "3" ]
 then
 	echo "Choose what algorithm (1/0)"
 	echo "0. Flooding"
@@ -32,52 +32,53 @@ fi
 #read mobility
 if [ "$testnumber" -eq "3" ]
 then
+	echo "TEST NUMBER IS 3"
 	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 64 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 1 64 0.4 1 1 1 0 0
 	done
 
 	mv *.txt testcase3/petal64
 	mv *.c testcase3/petal64
 	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 0 64 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 0 64 0.4 1 1 1 0 0
 	done
 	mv *.txt testcase3/flood64
 	mv *.c testcase3/flood64
 	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 125 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 1 125 0.4 1 1 1 0 0
 	done
 	mv *.txt testcase3/petal125
 	mv *.c testcase3/petal125
 	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 0 125 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 0 125 0.4 1 1 1 0 0
 	done
 	mv *.txt testcase3/flood125
 	mv *.c testcase3/flood125
 	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 216 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 1 216 0.4 1 1 1 0 0
 	done
 	mv *.txt testcase3/petal216
 	mv *.c testcase3/petal216
 	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "500" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 0 216 0.4 1 1 1 $c 0
+		python3 simulator_drone.py 0 216 0.4 1 1 1 0 0
 	done
 	mv *.txt testcase3/flood216
 	mv *.c testcase3/flood216
