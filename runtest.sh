@@ -38,6 +38,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 1 64 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 
 	mv *.txt testcase3/petal64
@@ -47,6 +48,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 0 64 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood64
 	mv *.c testcase3/flood64
@@ -55,6 +57,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 1 125 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/petal125
 	mv *.c testcase3/petal125
@@ -63,6 +66,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 0 125 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood125
 	mv *.c testcase3/flood125
@@ -71,6 +75,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 1 216 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/petal216
 	mv *.c testcase3/petal216
@@ -79,6 +84,7 @@ then
 	while [ "$c" -le "1" ]
 	do
 		python3 simulator_drone.py 0 216 0.4 1 1 1 0 0
+		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood216
 	mv *.c testcase3/flood216
