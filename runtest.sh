@@ -4,7 +4,8 @@
 echo "Choose what test scenario (1/0)"
 echo "0. Effect of increase in number of nodes"
 echo "1. Effect of increase in eccentricity"
-echo "2. Check delay related"
+echo "2. Check mobility"
+echo "3. Check petal vs flooding"
 read testnumber
 
 if [ "$testnumber" -ne "2" ]
@@ -29,6 +30,58 @@ fi
 #echo "1. All nodes moving with same velocity"
 #echo "2. Some nodes moving with same velocity"
 #read mobility
+if [ "$testnumber" -eq "3" ]
+then
+	cp sd64/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 1 64 0.4 1 1 1 $c 0
+	done
+
+	mv *.txt testcase3/petal64
+	mv *.c testcase3/petal64
+	cp sd64/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 0 64 0.4 1 1 1 $c 0
+	done
+	mv *.txt testcase3/flood64
+	mv *.c testcase3/flood64
+	cp sd125/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 1 125 0.4 1 1 1 $c 0
+	done
+	mv *.txt testcase3/petal125
+	mv *.c testcase3/petal125
+	cp sd125/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 0 125 0.4 1 1 1 $c 0
+	done
+	mv *.txt testcase3/flood125
+	mv *.c testcase3/flood125
+	cp sd216/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 1 216 0.4 1 1 1 $c 0
+	done
+	mv *.txt testcase3/petal216
+	mv *.c testcase3/petal216
+	cp sd216/*500* .
+	c=1
+	while [ "$c" -le "500" ]
+	do
+		python3 simulator_drone.py 0 216 0.4 1 1 1 $c 0
+	done
+	mv *.txt testcase3/flood216
+	mv *.c testcase3/flood216
+fi
 
 if [ "$testnumber" -eq "2" ]
 then
