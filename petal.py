@@ -428,6 +428,7 @@ def initiate_petal_parameters(choice):
 
         ff = (globalvars.pos[globalvars.focus2_key][0]-globalvars.pos[globalvars.focus1_key][0])**2 +(globalvars.pos[globalvars.focus2_key][1]-globalvars.pos[globalvars.focus1_key][1])**2+(globalvars.pos[globalvars.focus2_key][2]-globalvars.pos[globalvars.focus1_key][2])**2
         focaldist = math.sqrt(ff)
+        globalvars.sourcedestdistance = focaldist
 
 
     #when the destination is updated, in case of diverged petal algorithm
@@ -443,10 +444,9 @@ def initiate_petal_parameters(choice):
         ff = (globalvars.packet['dLoc'][0]-globalvars.save_old_source[0])**2 +(globalvars.packet['dLoc'][1]-globalvars.save_old_source[1])**2+(globalvars.packet['dLoc'][2]-globalvars.save_old_source[2])**2
         focaldist = math.sqrt(ff)
 
-
-
     print("Distance between two foci =", focaldist)
-    globalvars.sourcedestdistance = focaldist
+
+
     print("Linear eccentricity =", focaldist/2)
 
     print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")

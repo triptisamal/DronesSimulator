@@ -8,13 +8,13 @@ echo "2. Check mobility"
 echo "3. Check petal vs flooding"
 read testnumber
 
-if [ "$testnumber" -ne "2" or "$testnumber" -ne "3" ]
-then
-	echo "Choose what algorithm (1/0)"
-	echo "0. Flooding"
-	echo "1. Petal Routing"
-	read algorithm
-fi
+#if [ "$testnumber" -ne "2" || "$testnumber" -ne "3" ]
+#then
+#	echo "Choose what algorithm (1/0)"
+#	echo "0. Flooding"
+#	echo "1. Petal Routing"
+#	read algorithm
+#fi
 
 #echo "Choose what topology (1/0)"
 ##echo "0. Lattice"
@@ -35,9 +35,9 @@ then
 	echo "TEST NUMBER IS 3"
 	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 1 64 0.4 1 1 1 0 0
+		python3 simulator_drone.py 1 64 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 
@@ -45,45 +45,45 @@ then
 	mv *.c testcase3/petal64
 	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 0 64 0.4 1 1 1 0 0
+		python3 simulator_drone.py 0 64 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood64
 	mv *.c testcase3/flood64
 	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 1 125 0.4 1 1 1 0 0
+		python3 simulator_drone.py 1 125 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/petal125
 	mv *.c testcase3/petal125
 	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 0 125 0.4 1 1 1 0 0
+		python3 simulator_drone.py 0 125 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood125
 	mv *.c testcase3/flood125
 	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 1 216 0.4 1 1 1 0 0
+		python3 simulator_drone.py 1 216 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/petal216
 	mv *.c testcase3/petal216
 	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 0 216 0.4 1 1 1 0 0
+		python3 simulator_drone.py 0 216 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
 	mv *.txt testcase3/flood216

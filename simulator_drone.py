@@ -68,8 +68,8 @@ def node_handler(node_id, action,e):
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
-        if globalvars.packet_reached_dest == 0:
-            globalvars.broadcast += 1
+       # if globalvars.packet_reached_dest == 0:
+        #    globalvars.broadcast += 1
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
 
@@ -211,8 +211,8 @@ def node_handler(node_id, action,e):
                         globalvars.state_vector[i]['time_of_state_update'] = globalvars.now
         
                         print("Initializing broadcast")
-                        if globalvars.packet_reached_dest == 0:
-                            globalvars.broadcast += 1
+                        #if globalvars.packet_reached_dest == 0:
+                        globalvars.broadcast += 1
                         event_id = "BROADCAST_%03d" % (globalvars.idn)
                         globalvars.idn += 1
                         e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
