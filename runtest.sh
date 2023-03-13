@@ -33,61 +33,136 @@ read testnumber
 if [ "$testnumber" -eq "3" ]
 then
 	echo "TEST NUMBER IS 3"
-	cp sd64/*500* .
-	c=1
-	while [ "$c" -le "10" ]
-	do
-		python3 simulator_drone.py 1 64 0.4 0 1 1 0 0
-		c=$(( c+1 ))
-	done
 
-	mv *.txt testcase3/petal64
-	mv *.c testcase3/petal64
-	cp sd64/*500* .
+#	cp sd27/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 1 27 0.4 0 1 1 0 0 >out27_$c 
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/petal27
+#	mv *.c testcase3/petal27
+#	
+#	
+#	cp sd27/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 0 27 0.4 0 1 1 0 0
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/flood27
+#	mv *.c testcase3/flood27
+#
+#	cp sd64/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 1 64 0.4 0 1 1 0 0 >out64_$c
+#		c=$(( c+1 ))
+#	done
+#
+#	mv *.txt testcase3/petal64
+#	mv *.c testcase3/petal64
+#
+#
+#	cp sd64/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 0 64 0.4 0 1 1 0 0
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/flood64
+#	mv *.c testcase3/flood64
+#
+#
+#	cp sd125/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 1 125 0.4 0 1 1 0 0 >out125_$c
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/petal125
+#	mv *.c testcase3/petal125
+#
+#
+#	cp sd125/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 0 125 0.4 0 1 1 0 0
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/flood125
+#	mv *.c testcase3/flood125
+#
+#
+#	cp sd216/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 1 216 0.4 0 1 1 0 0 >out216_$c
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/petal216
+#	mv *.c testcase3/petal216
+#
+#
+#	cp sd216/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 0 216 0.4 0 1 1 0 0
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/flood216
+#	mv *.c testcase3/flood216
+#
+#
+#	cp sd343/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 1 343 0.4 0 1 1 0 0 >out343_$c
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/petal343
+#	mv *.c testcase3/petal343
+#
+#	cp sd343/*500* .
+#	c=1
+#	while [ "$c" -le "5" ]
+#	do
+#		python3 simulator_drone.py 0 343 0.4 0 1 1 0 0
+#		c=$(( c+1 ))
+#	done
+#	mv *.txt testcase3/flood343
+#	mv *.c testcase3/flood343
+
+
+	cp sd512/*500* .
 	c=1
-	while [ "$c" -le "10" ]
+	while [ "$c" -le "5" ]
 	do
-		python3 simulator_drone.py 0 64 0.4 0 1 1 0 0
+		python3 simulator_drone.py 1 512 0.4 0 1 1 0 0 >out512_$c
 		c=$(( c+1 ))
 	done
-	mv *.txt testcase3/flood64
-	mv *.c testcase3/flood64
-	cp sd125/*500* .
+	mv *.txt testcase3/petal512
+	mv *.c testcase3/petal512
+
+	cp sd512/*500* .
 	c=1
-	while [ "$c" -le "10" ]
+	while [ "$c" -le "5" ]
 	do
-		python3 simulator_drone.py 1 125 0.4 0 1 1 0 0
+		python3 simulator_drone.py 0 512 0.4 0 1 1 0 0
 		c=$(( c+1 ))
 	done
-	mv *.txt testcase3/petal125
-	mv *.c testcase3/petal125
-	cp sd125/*500* .
-	c=1
-	while [ "$c" -le "10" ]
-	do
-		python3 simulator_drone.py 0 125 0.4 0 1 1 0 0
-		c=$(( c+1 ))
-	done
-	mv *.txt testcase3/flood125
-	mv *.c testcase3/flood125
-	cp sd216/*500* .
-	c=1
-	while [ "$c" -le "10" ]
-	do
-		python3 simulator_drone.py 1 216 0.4 0 1 1 0 0
-		c=$(( c+1 ))
-	done
-	mv *.txt testcase3/petal216
-	mv *.c testcase3/petal216
-	cp sd216/*500* .
-	c=1
-	while [ "$c" -le "10" ]
-	do
-		python3 simulator_drone.py 0 216 0.4 0 1 1 0 0
-		c=$(( c+1 ))
-	done
-	mv *.txt testcase3/flood216
-	mv *.c testcase3/flood216
+	mv *.txt testcase3/flood512
+	mv *.c testcase3/flood512
+
 fi
 
 if [ "$testnumber" -eq "2" ]

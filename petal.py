@@ -659,7 +659,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
 
 
-def network_plot_3D(G, angle, save=False):
+def network_plot_3D(G, angle, save):
 
     # Get node positions
     globalvars.pos = nx.get_node_attributes(G, 'pos')

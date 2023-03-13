@@ -6,6 +6,12 @@ import sys
 from petal import *
 import globalvars
 
+x = []
+y = []
+z = []
+x1 = []
+y1 = []
+z1 = []
 
 def update_packet(action,loc):
     '''This method is for creating a packet. It is called by each source node'''
@@ -118,10 +124,15 @@ def node_handler(node_id, action,e):
     
 
     if action == "START_BACKOFF":
-        
+   
         #check if the node is inside petal or not
         inside = insideOrNot(loc)
         if inside == 1:
+
+           # x.append(loc[0])
+           # y.append(loc[1])
+           # z.append(loc[2])
+
             globalvars.node[node_id]['packet'] += 1
             #it is inside the petal
             print("it is inside petal")
@@ -140,6 +151,47 @@ def node_handler(node_id, action,e):
 
         else:
             print("it is outside petal")
+         #   x1.append(loc[0])
+         #   y1.append(loc[1])
+         #   z1.append(loc[2])
+
+
+
+
+         #Take a snapshot, not printing all, only printing one
+        xi = []
+        yi = []
+        zi = []
+        fig = plt.figure()
+        for key, value in globalvars.pos.items():
+            xi.append(value[0])
+            yi.append(value[1])
+            zi.append(value[2])
+            
+
+                                
+        ax = plt.axes(projection='3d')
+       # ax.set_xlim(0, 3)
+       # ax.set_ylim(0, 3)
+       # ax.set_zlim(0, 1000)
+        ax.scatter(xi,yi,zi, color='blue')
+       # ax.scatter(x,y,z, color='blue')
+       # ax.scatter(x1,y1,z1, color='black')
+         #ax.scatter(x2,y2,z2, color='red',marker='+')
+        #plt.show()
+        figname = "snap_%d.png" % (globalvars.broadcast)
+ 
+        plt.savefig(figname)
+        plt.close('all')
+
+        #write to file
+        original_stdout = sys.stdout
+        fig = "snap_%d.txt" % (globalvars.broadcast)
+        with open(fig,'a') as fg:
+            sys.stdout = fg
+            print(globalvars.pos)
+        sys.stdout = original_stdout
+
 
 
 
@@ -182,6 +234,8 @@ def node_handler(node_id, action,e):
 
                                 if globalvars.packet_reached_dest == 0:
                                     globalvars.broadcast += 1
+
+
                                 event_id = "BROADCAST_%03d" % (globalvars.idn)
                                 globalvars.idn += 1
                                 e = create_event(event_id,node_id,globalvars.now,globalvars.packet)
@@ -410,7 +464,6 @@ def main():
     globalvars.topology = float(sys.argv[4])
     globalvars.zone = float(sys.argv[5])
     globalvars.iteration = int(sys.argv[7])
-    print("ITERATION = ", globalvars.iteration)
     print("Number of nodes = ", globalvars.number_of_nodes)
     if int(sys.argv[6]) == 0:
         print("Nodes are not moving")
@@ -423,7 +476,6 @@ def main():
     initiate_source_destination()
    
 
-    #print("SIMULATION RUN",running)
     print("EVENTS")
     print("-------")
     globalvars.event_queue = deque()
