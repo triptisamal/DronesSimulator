@@ -36,7 +36,7 @@ then
 
 #	cp sd27/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 1 27 0.4 1 1 1 $c 2 
 		c=$(( c+1 ))
@@ -47,7 +47,7 @@ then
 	
 #	cp sd27/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 0 27 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -57,7 +57,7 @@ then
 
 #	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 1 64 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -69,7 +69,7 @@ then
 
 #	cp sd64/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 0 64 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -80,7 +80,7 @@ then
 
 #	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 1 125 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -91,7 +91,7 @@ then
 
 #	cp sd125/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 0 125 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -102,7 +102,7 @@ then
 
 #	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 1 216 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -113,7 +113,7 @@ then
 
 #	cp sd216/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 0 216 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
@@ -124,7 +124,7 @@ then
 
 #	cp sd343/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 	#	python3 simulator_drone.py 1 343 0.4 0 1 1 $c 0 
 		python3 simulator_drone.py 1 343 0.4 1 1 1 $c 2
@@ -135,7 +135,7 @@ then
 
 #	cp sd343/*500* .
 	c=1
-	while [ "$c" -le "5" ]
+	while [ "$c" -le "500" ]
 	do
 		python3 simulator_drone.py 0 343 0.4 1 1 1 $c 2
 		c=$(( c+1 ))
