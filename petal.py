@@ -368,7 +368,35 @@ def initiate_source_destination():
             print(globalvars.focus2_key)
 
         sys.stdout = original_stdout
+    elif globalvars.sd_random == 2:
+        #choose s and d according to distance
+
+        node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
+        for key, value in globalvars.pos.items():
+       # xi.append(value[0])
+       # yi.append(value[1])
+       # zi.append(value[2])
+            node_loc[key]['x'] = value[0]
+            node_loc[key]['y'] = value[1]
+            node_loc[key]['z'] = value[2]
+
+
+
         
+        for u, v in combinations(globalvars.G, 2):
+        
+            dist = distance_between_nodes(u,v,node_loc)
+            if round(dist) == 3:
+                globalvars.focus1_key = u
+                globalvars.focus2_key = v
+                globalvars.s = globalvars.focus1_key
+                globalvars.d = globalvars.focus2_key
+                print("source-destination: distance",round(dist))
+
+                break
+
+
+
     else:
         ret = read_from_file(1)
     
@@ -379,7 +407,7 @@ def initiate_source_destination():
     
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
-
+   
     #Initiating petal parameters for the first time
     initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
     find_points_inside_ellipsoid()
@@ -604,6 +632,24 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
   #  print("Position of all nodes initially: ",globalvars.pos) 
 
     #to_del = []
+    
+    #test
+    #for u, v in combinations(globalvars.G, 2):
+    #    
+    #    dist = distance_between_nodes(u,v,node_loc)
+    #    print("u=",u)
+    #    print("v=",v)
+    #    print("node_loc=",node_loc[u]['x'])
+    #    print("node_loc=",node_loc[u]['y'])
+    #    print("node_loc=",node_loc[u]['z'])
+    #    print("node_loc=",node_loc[v]['x'])
+    #    print("node_loc=",node_loc[v]['y'])
+    #    print("node_loc=",node_loc[v]['z'])
+    #    print(dist)
+    #
+    #sys.exit()
+
+
     for u, v in combinations(globalvars.G, 2):
         
         dist = distance_between_nodes(u,v,node_loc)
@@ -625,9 +671,9 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
             #distance is 10 feet
             globalvars.G.add_edge(u, v)
             continue
-        if dist >= 2: #if distance is more than 50 feet
+        if dist >= 2: #if distance is more than 50 feet = 2
             pass
-        elif dist < 1: #if distance is less than 25 feet
+        elif dist < 1: #if distance is less than 25 feet = 1
             globalvars.G.add_edge(u, v)
         else:
             p = 1 - ((dist - 1)/1)
@@ -638,16 +684,16 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
 
 #Temporary code for sanity check
-    found = 0
-    for u, v in combinations(globalvars.G, 2):
-        dist = distance_between_nodes(u,v,node_loc)
-        if dist < 0.4:
-            print("Distance between",u,v,"is less than 0.4; check code")
-            found = 1
-    
-    if found == 0:
-        print("Distance sanity check passed")
-       
+  #  found = 0
+  #  for u, v in combinations(globalvars.G, 2):
+  #      dist = distance_between_nodes(u,v,node_loc)
+  #      if dist < 0.4:
+  #          print("Distance between",u,v,"is less than 0.4; check code")
+  #          found = 1
+  #  
+  #  if found == 0:
+  #      print("Distance sanity check passed")
+  #     
         
         
     #print("removed nodes = ",to_del)
@@ -743,9 +789,45 @@ def create_drones_network():
     #make adj list correct (both directions) 
     print("ADJACENCY LIST")
     print("----------------")
+    original_stdout = sys.stdout
+    name = "network_%d.txt" % (globalvars.iteration)
+ 
+    with open(name,'a') as f:
+        sys.stdout = f
+        for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+            print(line)
+    sys.stdout = original_stdout
 
-  #  for line in generate_adjlist_with_all_edges(globalvars.G,' '):
-  #      print(line)
+
+
+             #Take a snapshot, not printing all, only printing one
+    xi = []
+    yi = []
+    zi = []
+    fig = plt.figure()
+    for key, value in globalvars.pos.items():
+        xi.append(value[0])
+        yi.append(value[1])
+        zi.append(value[2])
+        
+
+                            
+    ax = plt.axes(projection='3d')
+    ax.scatter(xi,yi,zi, color='blue')
+    for i,j in enumerate(G.edges()):
+
+        x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
+        y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
+        z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
+    
+    # Plot the connecting lines
+        ax.plot(x, y, z, c='black', alpha=0.5)
+    
+
+    figname = "snap_network%d.png" % (globalvars.iteration)
+ 
+    plt.savefig(figname)
+    plt.close('all')
 
 def find_points_inside_ellipsoid():
 

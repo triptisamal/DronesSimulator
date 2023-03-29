@@ -171,14 +171,9 @@ def node_handler(node_id, action,e):
 
                                 
         ax = plt.axes(projection='3d')
-       # ax.set_xlim(0, 3)
-       # ax.set_ylim(0, 3)
-       # ax.set_zlim(0, 1000)
         ax.scatter(xi,yi,zi, color='blue')
-       # ax.scatter(x,y,z, color='blue')
-       # ax.scatter(x1,y1,z1, color='black')
-         #ax.scatter(x2,y2,z2, color='red',marker='+')
-        #plt.show()
+    
+
         figname = "snap_%d.png" % (globalvars.broadcast)
  
         plt.savefig(figname)
