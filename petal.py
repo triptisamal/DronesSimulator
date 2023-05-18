@@ -589,7 +589,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
         #gaussian noise
         mu = 0
-        sigma = 0.2
+        sigma = 0.9
         noise = np.random.normal(mu, sigma, [globalvars.number_of_nodes])
         while n < globalvars.number_of_nodes:
             for i in range(1,side+1):
@@ -599,26 +599,6 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                         node_loc[n]['y'] = j + noise[n]
                         node_loc[n]['z'] = k + noise[n]
                         n += 1
-
-
-    if globalvars.topology == 1: #Gaussian Perturbation Lattice
-            n = 0
-            side = int((globalvars.number_of_nodes+1)**(1.0/3))
-            print(globalvars.number_of_nodes)
-            print(side)
-    
-            #gaussian noise
-            mu = 0
-            sigma = 0.2
-            noise = np.random.normal(mu, sigma, [globalvars.number_of_nodes])
-            while n < globalvars.number_of_nodes:
-                for i in range(1,side+1):
-                    for j in range(1,side+1):
-                        for k in range(1,side+1):
-                            node_loc[n]['x'] = i + noise[n]
-                            node_loc[n]['y'] = j + noise[n]
-                            node_loc[n]['z'] = k + noise[n]
-                            n += 1
 
 
     # Generate a dict of positions
@@ -787,47 +767,47 @@ def create_drones_network():
     #update number of nodes
     globalvars.number_of_nodes = len(globalvars.G.nodes())
     #make adj list correct (both directions) 
-    print("ADJACENCY LIST")
-    print("----------------")
-    original_stdout = sys.stdout
-    name = "network_%d.txt" % (globalvars.iteration)
- 
-    with open(name,'a') as f:
-        sys.stdout = f
-        for line in generate_adjlist_with_all_edges(globalvars.G,' '):
-            print(line)
-    sys.stdout = original_stdout
+ #   print("ADJACENCY LIST")
+ #   print("----------------")
+ #   original_stdout = sys.stdout
+ #   name = "network_%d.txt" % (globalvars.iteration)
+ #
+ #   with open(name,'a') as f:
+ #       sys.stdout = f
+ #       for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+ #           print(line)
+ #   sys.stdout = original_stdout
 
 
 
-             #Take a snapshot, not printing all, only printing one
-    xi = []
-    yi = []
-    zi = []
-    fig = plt.figure()
-    for key, value in globalvars.pos.items():
-        xi.append(value[0])
-        yi.append(value[1])
-        zi.append(value[2])
-        
+ #            #Take a snapshot, not printing all, only printing one
+ #   xi = []
+ #   yi = []
+ #   zi = []
+ #   fig = plt.figure()
+ #   for key, value in globalvars.pos.items():
+ #       xi.append(value[0])
+ #       yi.append(value[1])
+ #       zi.append(value[2])
+ #       
 
-                            
-    ax = plt.axes(projection='3d')
-    ax.scatter(xi,yi,zi, color='blue')
-    for i,j in enumerate(G.edges()):
+ #                           
+ #   ax = plt.axes(projection='3d')
+ #   ax.scatter(xi,yi,zi, color='blue')
+ #   for i,j in enumerate(G.edges()):
 
-        x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
-        y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
-        z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
+ #       x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
+ #       y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
+ #       z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
+ #   
+ #   # Plot the connecting lines
+ #       ax.plot(x, y, z, c='black', alpha=0.5)
     
-    # Plot the connecting lines
-        ax.plot(x, y, z, c='black', alpha=0.5)
-    
 
-    figname = "snap_network%d.png" % (globalvars.iteration)
- 
-    plt.savefig(figname)
-    plt.close('all')
+ #   figname = "snap_network%d.png" % (globalvars.iteration)
+ #
+ #   plt.savefig(figname)
+ #   plt.close('all')
 
 def find_points_inside_ellipsoid():
 

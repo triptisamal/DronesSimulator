@@ -157,35 +157,35 @@ def node_handler(node_id, action,e):
 
 
 
-
-         #Take a snapshot, not printing all, only printing one
-        xi = []
-        yi = []
-        zi = []
-        fig = plt.figure()
-        for key, value in globalvars.pos.items():
-            xi.append(value[0])
-            yi.append(value[1])
-            zi.append(value[2])
-            
-
-                                
-        ax = plt.axes(projection='3d')
-        ax.scatter(xi,yi,zi, color='blue')
-    
-
-        figname = "snap_%d.png" % (globalvars.broadcast)
- 
-        plt.savefig(figname)
-        plt.close('all')
-
-        #write to file
-        original_stdout = sys.stdout
-        fig = "snap_%d.txt" % (globalvars.broadcast)
-        with open(fig,'a') as fg:
-            sys.stdout = fg
-            print(globalvars.pos)
-        sys.stdout = original_stdout
+#
+#         #Take a snapshot, not printing all, only printing one
+#        xi = []
+#        yi = []
+#        zi = []
+#        fig = plt.figure()
+#        for key, value in globalvars.pos.items():
+#            xi.append(value[0])
+#            yi.append(value[1])
+#            zi.append(value[2])
+#            
+#
+#                                
+#        ax = plt.axes(projection='3d')
+#        ax.scatter(xi,yi,zi, color='blue')
+#    
+#
+#        figname = "snap_%d.png" % (globalvars.broadcast)
+# 
+#        plt.savefig(figname)
+#        plt.close('all')
+#
+#        #write to file
+#        original_stdout = sys.stdout
+#        fig = "snap_%d.txt" % (globalvars.broadcast)
+#        with open(fig,'a') as fg:
+#            sys.stdout = fg
+#            print(globalvars.pos)
+#        sys.stdout = original_stdout
 
 
 
@@ -412,10 +412,10 @@ def process_event(e):
                 globalvars.packet_reached_dest = 1
                 print("now time ",globalvars.now)
                 globalvars.copies_delivered += 1
-                #find total delay
-                if globalvars.copies_delivered == 1:
-                    globalvars.delay = globalvars.now
-                    print("tot delay ",globalvars.delay)
+              #  #find total delay
+              #  if globalvars.copies_delivered == 1:
+              #      globalvars.delay = globalvars.now
+              #      print("tot delay ",globalvars.delay)
 
 
 
@@ -538,10 +538,10 @@ def main():
         #with open(petal_numberinsidepetal,'a') as f3:
         #   sys.stdout = f3
         #   print(globalvars.insidectr,",")
-            petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-            with open(petal_delay,'a') as f4:
-                sys.stdout = f4
-                print(globalvars.delay,",")
+       #     petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        #    with open(petal_delay,'a') as f4:
+         #       sys.stdout = f4
+        #        print(globalvars.delay,",")
             write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
         sys.stdout = original_stdout
     
