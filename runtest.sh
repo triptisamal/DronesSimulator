@@ -7,30 +7,76 @@ echo "1. Effect of increase in eccentricity"
 echo "2. Check mobility"
 echo "3. Check petal vs flooding"
 echo "4. Static"
+echo "5. Packet copies"
 read testnumber
 
-#if [ "$testnumber" -ne "2" || "$testnumber" -ne "3" ]
-#then
-#	echo "Choose what algorithm (1/0)"
-#	echo "0. Flooding"
-#	echo "1. Petal Routing"
-#	read algorithm
-#fi
-
-#echo "Choose what topology (1/0)"
-##echo "0. Lattice"
-#echo "1. Guassian Perturbed Lattice"
-#read topology
-
-#echo "Choose what zone (1/0)"
-#echo "0. Single"
-#echo "1. Multi"
-#read zone
-#echo "Choose what mobility model (2/1/0)"
-#echo "0. No mobility"
-#echo "1. All nodes moving with same velocity"
-#echo "2. Some nodes moving with same velocity"
 #read mobility
+if [ "$testnumber" -eq "5" ]
+then
+	echo "TEST NUMBER IS 5"
+
+	##Static
+	echo '0' > velocity_for_all
+	c=1
+	while [ "$c" -le "650" ]
+	do
+		python3 simulator_drone.py 1 343 0.4 1 1 0 $c 1
+		c=$(( c+1 ))
+	done
+
+	mv *.txt testcase5/0
+	mv *.c testcase5/0
+
+	echo '2' > velocity_for_all
+
+	c=1
+	while [ "$c" -le "650" ]
+	do
+		python3 simulator_drone.py 1 343 0.4 1 1 1 $c 1
+		c=$(( c+1 ))
+	done
+
+	mv *.txt testcase5/2
+	mv *.c testcase5/2
+
+	echo '4' > velocity_for_all
+
+	c=1
+	while [ "$c" -le "650" ]
+	do
+		python3 simulator_drone.py 1 343 0.4 1 1 1 $c 1
+		c=$(( c+1 ))
+	done
+
+	mv *.txt testcase5/4
+	mv *.c testcase5/4
+
+
+	echo '6' > velocity_for_all
+	c=1
+	while [ "$c" -le "650" ]
+	do
+		python3 simulator_drone.py 1 343 0.4 1 1 1 $c 1
+		c=$(( c+1 ))
+	done
+
+	mv *.txt testcase5/6
+	mv *.c testcase5/6
+
+
+	echo '8' > velocity_for_all
+	c=1
+	while [ "$c" -le "650" ]
+	do
+		python3 simulator_drone.py 1 343 0.4 1 1 1 $c 1
+		c=$(( c+1 ))
+	done
+
+	mv *.txt testcase5/8
+	mv *.c testcase5/8
+
+
+fi
 
 
 if [ "$testnumber" -eq "4" ]
@@ -57,9 +103,9 @@ then
 #	mv *.c testcase4/petal64
 #temp change to flood
 	c=1
-	while [ "$c" -le "150" ]
+	while [ "$c" -le "100" ]
 	do
-		python3 simulator_drone.py 0 125 0.4 1 1 0 $c 2
+		python3 simulator_drone.py 1 125 0.4 1 1 0 $c 2
 		c=$(( c+1 ))
 	done
 #	mv *.txt testcase4/petal125

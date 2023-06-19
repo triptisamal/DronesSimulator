@@ -31,6 +31,7 @@ def init():
     global broadcast
     global transmission_delay
     global delay
+    global delay_last
     global speed
     global state_vector
     global copies_transmitted
@@ -83,8 +84,9 @@ def init():
     number_of_nodes = 0
     idn = 0
     broadcast = 0
-    transmission_delay = 3 #seconds
+    transmission_delay = 0.008 #seconds
     delay = 0
+    delay_last = 0
     speed = 299792458 #m / s
     copies_transmitted = 0
     copies_delivered = 0

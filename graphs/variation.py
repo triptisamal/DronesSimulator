@@ -16,14 +16,14 @@ yer2=[0.796,
 1.021409
 ]
 #petal more variation
-ax.plot([27, 64, 125,216,343],[12,19,26,26,32], color='purple',marker="o", markersize=3,linewidth=1,label="more perturbation (σ=0.9)")
+ax.plot([27, 64, 125,216,343],[12,19,26,26,32], color='purple',marker="o", markersize=3,linewidth=1,label="high perturbation (σ=0.9, μ=0)")
 #ax.plot([27, 64, 125,216,343],[13,14,14,14,14], color='blue',marker="o",markersize=2,label="Petal")
 
 ax.errorbar([27,64, 125,216,343],[12,19,26,26,32], yerr = yer1, linewidth=1, color='black',ls='none')
 #ax.errorbar([27,64, 125,216,343],[13,14,14,14,14], yerr = yer1,  color='black',capsize=3,ls='none')
 
 #petal less variation
-ax.plot([27, 64, 125,216,343],[13,14,14,14,14], color='lightgreen',marker="v",markersize=3,linewidth=1,label="less perturbation (σ=0.2)")
+ax.plot([27, 64, 125,216,343],[13,14,14,14,14], color='lightgreen',marker="v",markersize=3,linewidth=1,label="low perturbation (σ=0.2, μ=0)")
 ax.errorbar([27, 64, 125,216,343],[13,14,14,14,14], yerr = yer2, linewidth=1, color='black',ls='none')
 ##ax.errorbar([27, 64, 125,216,343],[24, 61, 122,213,340], yerr = yer2,  color='black',capsize=3,ls='none')
 plt.legend(loc="upper left")

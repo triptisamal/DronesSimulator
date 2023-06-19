@@ -386,7 +386,7 @@ def initiate_source_destination():
         for u, v in combinations(globalvars.G, 2):
         
             dist = distance_between_nodes(u,v,node_loc)
-            if round(dist) == 3:
+            if round(dist) == 12:
                 globalvars.focus1_key = u
                 globalvars.focus2_key = v
                 globalvars.s = globalvars.focus1_key
@@ -394,7 +394,9 @@ def initiate_source_destination():
                 print("source-destination: distance",round(dist))
 
                 break
-
+        if globalvars.focus2_key ==0:
+            print("ERR DESTINATION")
+            sys.exit()
 
 
     else:
