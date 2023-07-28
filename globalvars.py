@@ -43,6 +43,7 @@ def init():
     global insidectr
     global sd_random
     global iteration
+    global adjlist
     global save_old_source
     global packet_reached_dest
     global s
@@ -97,6 +98,7 @@ def init():
     insidectr = 0
     sd_random = 1
     iteration = 0
+    adjlist = 0
     save_old_source = (0,0,0)
     packet_reached_dest = 0
     s=0

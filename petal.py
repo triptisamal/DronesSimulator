@@ -17,6 +17,10 @@ from mpl_toolkits.mplot3d import Axes3D
 import sys
 import time
 
+def process_each_line(line,edgelist):
+    words = line.split()
+    for word in words:
+        edgelist.append(int(word))
 
 def check_collision(node_loc):
     
@@ -441,6 +445,67 @@ def calculate_current_dest(current_time,old_loc):
     print("New coordinates = ", new_loc)
     return new_loc
 
+
+#def calculate_eccentricity(source):
+#
+#
+#    #eq of circle
+#
+
+
+
+def local_nodes(location,source,r):
+    #extract the exact x,y,z coordinates
+    
+    x = location[0]
+    y = location[1]
+    z = location[2]
+
+    a = source[0]
+    b = source[1]
+    c = source[2]
+
+    sol = (x-a)**2 + (y-b)**2 + (z-c)**2 # (x - a)² + (y - b)² + (z - c)²
+    r_sq = r*r
+    if sol <= r_sq:
+        return 1 #inside
+    else:
+        return 
+
+def edge_exists(s,p):
+    print(s)
+    print(p)
+    #TODO
+#     for s, nbrs in G.adjacency():
+#        for t, data in nbrs.items():
+#            line += str(t) + delimiter
+#        yield line[: -len(delimiter)]
+#
+    return 1
+
+def calc_local_density():
+
+    total_connections = 0
+    total_potential_connections = 0
+    inside = 0
+
+    radius = 1.73 #lattice dimension; long diagonal = 86.6 feet 
+    for i in range(globalvars.number_of_nodes):
+       inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],radius)
+       if inside:
+           total_potential_connections +=1
+           if edge_exists(globalvars.packet['sLoc'],globalvars.node[i]['loc']):
+               total_connections += 1
+
+
+    local_density = total_connections/total_potential_connections
+    return local_density
+
+
+       
+
+
+
 def initiate_petal_parameters(choice):
 
     print("PETAL PARAMETERS")
@@ -476,11 +541,13 @@ def initiate_petal_parameters(choice):
 
     print("Distance between two foci =", focaldist)
 
-
+    
     print("Linear eccentricity =", focaldist/2)
 
     print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
 
+
+    #globalvars.e = calculate_eccentricity(globalvars.focus1_key)
     print("Eccentricity:",globalvars.e)
     #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
     globalvars.a = focaldist/(2*globalvars.e)
@@ -500,6 +567,11 @@ def initiate_petal_parameters(choice):
     # a > b > c: scalene spheroid or triaxial.
     globalvars.b = globalvars.c
     print("c = ",globalvars.c)
+
+
+
+    density_source = calc_local_density()
+    print("Local density:",density_source)
 
 
 
@@ -611,60 +683,65 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     
     
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
-  #  print("Position of all nodes initially: ",globalvars.pos) 
-
-    #to_del = []
-    
-    #test
-    #for u, v in combinations(globalvars.G, 2):
-    #    
-    #    dist = distance_between_nodes(u,v,node_loc)
-    #    print("u=",u)
-    #    print("v=",v)
-    #    print("node_loc=",node_loc[u]['x'])
-    #    print("node_loc=",node_loc[u]['y'])
-    #    print("node_loc=",node_loc[u]['z'])
-    #    print("node_loc=",node_loc[v]['x'])
-    #    print("node_loc=",node_loc[v]['y'])
-    #    print("node_loc=",node_loc[v]['z'])
-    #    print(dist)
-    #
-    #sys.exit()
-
-
-    for u, v in combinations(globalvars.G, 2):
+    counter = 0
+    if globalvars.adjlist == 0:
+        for u, v in combinations(globalvars.G, 2):
         
-        dist = distance_between_nodes(u,v,node_loc)
-        #print(dist)
-        if dist <= 0.4: #if distance is less than 10 feet
-            print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
-            #to_del.append(u)
-            #to_del.append(v)
-            z_v = avoid_collision(u,v,node_loc)
-            #update position of v
-            
-            index = int(v)
-            posi = list(globalvars.pos[v])
-            posi[2] = z_v
-            globalvars.pos[v] = tuple(posi)
-            
-            #also update node_loc
-            node_loc[v]['z'] = z_v
-            #distance is 10 feet
-            globalvars.G.add_edge(u, v)
-            continue
-        if dist >= 2: #if distance is more than 50 feet = 2
-            pass
-        elif dist < 1: #if distance is less than 25 feet = 1
-            globalvars.G.add_edge(u, v)
-        else:
-            p = 1 - ((dist - 1)/1)
-            q = random.uniform(0,1)
-            if q <= p:
-                globalvars.G.add_edge(u, v)
+             dist = distance_between_nodes(u,v,node_loc)
+             #print(dist)
+             #if dist <= 0.4: #if distance is less than 10 feet
+             if dist < 0.2: #if distance is less than 10 feet
+                 print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+                 #to_del.append(u)
+                 #to_del.append(v)
+                 z_v = avoid_collision(u,v,node_loc)
+                 #update position of v
+                 
+                 index = int(v)
+                 posi = list(globalvars.pos[v])
+                 posi[2] = z_v
+                 globalvars.pos[v] = tuple(posi)
+                 
+                 #also update node_loc
+                 node_loc[v]['z'] = z_v
+                 #distance is 10 feet
+                 globalvars.G.add_edge(u, v)
+                 counter += 1
+                 continue
+             #if dist >= 2: #if distance is more than 50 feet = 2
+             if dist >= 6: #if distance is more than 150 feet = 3
+                 pass
+            # elif dist < 0.2: #if distance is less than 10 feet = 1/5; 1 = 50 feet
+             elif dist < 1: #if distance is less than 25 feet = 1
+                 globalvars.G.add_edge(u, v)
+                 counter += 1
+             else:
+                 p = 1 - ((dist - 1)/4.8)
+                 q = random.uniform(0,1)
+                 if q <= p:
+                     globalvars.G.add_edge(u, v)
+                     counter += 1
+
+
+
+    if globalvars.adjlist == 1:
+        file = open('network_13.txt', 'r')
+        lines = file.readlines()
+
+        for index, line in enumerate(lines):
+            edgelist = []
+            process_each_line(line.strip(),edgelist)
+            for i in range(1,len(edgelist)):
+                globalvars.G.add_edge(edgelist[0], edgelist[i])
+                print("adding edge",edgelist[0], edgelist[i])
+
+        del(edgelist)
+        file.close()
+
+    
     #globalvars.G.remove_nodes_from(to_del)
 
-
+    print("counter=",counter)
 #Temporary code for sanity check
   #  found = 0
   #  for u, v in combinations(globalvars.G, 2):
@@ -685,6 +762,15 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
     return globalvars.G
 
+def find_network_density():
+    '''Graph Density | Baeldung on Computer Science
+Graph density represents the ratio between the edges present in a graph and the maximum number of edges that the graph can contain. Conceptually, it provides an idea of how dense a graph is in terms of edge connectivity.'''
+
+
+    max_edges = globalvars.number_of_nodes*(globalvars.number_of_nodes-1)/2
+    number_of_edges = globalvars.G.number_of_edges()
+    print("Density = ", number_of_edges/max_edges)
+    print("number of edges = ", number_of_edges)
 
 
 def network_plot_3D(G, angle, save):
@@ -769,16 +855,16 @@ def create_drones_network():
     #update number of nodes
     globalvars.number_of_nodes = len(globalvars.G.nodes())
     #make adj list correct (both directions) 
- #   print("ADJACENCY LIST")
- #   print("----------------")
- #   original_stdout = sys.stdout
- #   name = "network_%d.txt" % (globalvars.iteration)
- #
- #   with open(name,'a') as f:
- #       sys.stdout = f
- #       for line in generate_adjlist_with_all_edges(globalvars.G,' '):
- #           print(line)
- #   sys.stdout = original_stdout
+    print("ADJACENCY LIST")
+    print("----------------")
+    original_stdout = sys.stdout
+    name = "network_%d.txt" % (globalvars.iteration)
+ 
+    with open(name,'a') as f:
+        sys.stdout = f
+        for line in generate_adjlist_with_all_edges(globalvars.G,' '):
+            print(line)
+    sys.stdout = original_stdout
 
 
 
