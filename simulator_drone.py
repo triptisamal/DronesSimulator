@@ -475,7 +475,7 @@ def main():
 
     find_network_density()
     initiate_source_destination()
-    sys.exit()
+   # sys.exit()
    
 
     print("EVENTS")

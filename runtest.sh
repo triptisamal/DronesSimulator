@@ -20,16 +20,16 @@ then
 	##Static
 	echo '0' > velocity_for_all
 	c=1
-	while [ "$c" -le "20" ]
+	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 64 0.4 1 0 0 $c 0 0 >out_$c
+		python3 simulator_drone.py 1 512 0.4 1 0 0 $c 0 1 >out_$c
 		#python3 simulator_drone.py argv1 argv2 argv3 argv4 argv5 argv6 $c argv8 argv9 >out_$c
 		c=$(( c+1 ))
 	done
 
-	mv network_*.txt density/
-	mv *.c density/
-	mv out_* density/
+#	mv network_*.txt density/
+#	mv *.c density/
+#	mv out_* density/
 fi
 #read mobility
 if [ "$testnumber" -eq "5" ]

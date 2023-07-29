@@ -8,7 +8,7 @@ import math
 import globalvars
 import pylab
 import numpy as np
-
+import pickle
 
 from itertools import combinations
 import matplotlib.pyplot as plt
@@ -413,7 +413,11 @@ def initiate_source_destination():
     
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
-   
+    
+    calc_local_density()
+    globalvars.G.clear()
+   # del(globalvars.G)
+    sys.exit()
     #Initiating petal parameters for the first time
     initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
     find_points_inside_ellipsoid()
@@ -485,21 +489,40 @@ def edge_exists(s,p):
 
 def calc_local_density():
 
-    total_connections = 0
-    total_potential_connections = 0
-    inside = 0
 
-    radius = 1.73 #lattice dimension; long diagonal = 86.6 feet 
-    for i in range(globalvars.number_of_nodes):
-       inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],radius)
-       if inside:
-           total_potential_connections +=1
-           if edge_exists(globalvars.packet['sLoc'],globalvars.node[i]['loc']):
-               total_connections += 1
+    radius = 0
 
+    while radius <=10:
+        total_connections = 0
+        total_potential_connections = 0
+        inside = 0
+        for i in range(globalvars.number_of_nodes):
+            inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],radius)
+            if inside:
+                total_potential_connections +=1
+                if edge_exists(globalvars.packet['sLoc'],globalvars.node[i]['loc']):
+                    total_connections += 1
+        radius +=1
 
-    local_density = total_connections/total_potential_connections
-    return local_density
+        original_stdout = sys.stdout
+        total_nodes_inside = "total_nodes_inside.txt" 
+        total_connections_inside = "total_connection_inside.txt" 
+        local_density = "local_density.txt" 
+        with open(total_nodes_inside,'a') as f:
+            sys.stdout = f
+            print(total_potential_connections)
+
+    
+        #with open(petal_dest,'a') as f1:
+        #    sys.stdout = f1
+        #    print(dest)
+
+        sys.stdout = original_stdout
+       
+        if total_potential_connections >= 1:
+            local_density = total_connections/total_potential_connections
+    
+    #return local_density
 
 
        
@@ -576,11 +599,12 @@ def initiate_petal_parameters(choice):
 
 
 def generate_adjlist_with_all_edges(G,delimiter):
-    for s, nbrs in G.adjacency():
-        line = str(s) + delimiter
+    
+    for s, nbrs in globalvars.G.adjacency():
+        line1 = str(s) + delimiter
         for t, data in nbrs.items():
-            line += str(t) + delimiter
-        yield line[: -len(delimiter)]
+            line1 += str(t) + delimiter
+        yield line1[: -len(delimiter)]
 
 def distance(u, v):
     x1 = globalvars.pos[u][0]
@@ -709,34 +733,42 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                  counter += 1
                  continue
              #if dist >= 2: #if distance is more than 50 feet = 2
-             if dist >= 6: #if distance is more than 150 feet = 3
+             if dist >= 3.46: #twice long diagonal
                  pass
-            # elif dist < 0.2: #if distance is less than 10 feet = 1/5; 1 = 50 feet
-             elif dist < 1: #if distance is less than 25 feet = 1
+             elif dist < 0.4: #if distance is less than 10 feet = 10/25; 1 = 25 feet
                  globalvars.G.add_edge(u, v)
                  counter += 1
              else:
-                 p = 1 - ((dist - 1)/4.8)
+                 p = 1 - ((dist - 0.4)/3.06)
                  q = random.uniform(0,1)
                  if q <= p:
                      globalvars.G.add_edge(u, v)
                      counter += 1
+        pickle.dump(globalvars.G, open('graph.pickle','wb'))
 
 
 
     if globalvars.adjlist == 1:
-        file = open('network_13.txt', 'r')
-        lines = file.readlines()
+        globalvars.G = pickle.load(open('graph.pickle', 'rb'))
+       # file = open('network_1.txt', 'r')
+       # lines = []
+       # lines = file.readlines()
 
-        for index, line in enumerate(lines):
-            edgelist = []
-            process_each_line(line.strip(),edgelist)
-            for i in range(1,len(edgelist)):
-                globalvars.G.add_edge(edgelist[0], edgelist[i])
-                print("adding edge",edgelist[0], edgelist[i])
+       # for index, line in enumerate(lines):
+       #     edgelist = []
+       #     process_each_line(line.strip(),edgelist)
+       #     for i in range(1,len(edgelist)):
+       #         globalvars.G.add_edge(edgelist[0], edgelist[i])
+       #         print("adding edge",edgelist[0], edgelist[i])
 
-        del(edgelist)
-        file.close()
+       #     del(edgelist) #added this because of memory leak; edgelist had older numbers than the ones read from file
+       # file.close()
+
+        print("AFTER READING FILE")
+        for n, nbrdict in globalvars.G.adjacency():
+            print((n,nbrdict))	
+	
+	
 
     
     #globalvars.G.remove_nodes_from(to_del)
@@ -758,6 +790,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     #print("removed nodes = ",to_del)
     print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     globalvars.number_of_nodes = globalvars.G.number_of_nodes()
+    
     #print("Position of all nodes after: ",globalvars.pos) 
 
     return globalvars.G
@@ -825,6 +858,7 @@ def network_plot_3D(G, angle, save):
    #  else:
    #       plt.show()
   #  plt.show()
+    plt.clf()
     
     return
 
@@ -834,7 +868,7 @@ def create_drones_network():
 
     n = globalvars.number_of_nodes  
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
-    network_plot_3D(G,0, save=False)
+    #network_plot_3D(G,0, save=False)
     
     
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
@@ -857,6 +891,7 @@ def create_drones_network():
     #make adj list correct (both directions) 
     print("ADJACENCY LIST")
     print("----------------")
+
     original_stdout = sys.stdout
     name = "network_%d.txt" % (globalvars.iteration)
  
