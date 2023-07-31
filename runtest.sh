@@ -22,7 +22,16 @@ then
 	c=1
 	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 512 0.4 1 0 0 $c 0 1 >out_$c
+		python3 simulator_drone.py 1 343 0.1 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.2 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.3 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.4 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.5 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.6 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.7 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.8 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 343 0.9 0 0 0 $c 0 1 
+		#python3 simulator_drone.py 1 512 0.4 1 0 0 $c 0 1 >out_$c
 		#python3 simulator_drone.py argv1 argv2 argv3 argv4 argv5 argv6 $c argv8 argv9 >out_$c
 		c=$(( c+1 ))
 	done

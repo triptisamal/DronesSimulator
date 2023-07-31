@@ -572,7 +572,7 @@ def main():
             sys.stdout = original_stdout
             print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
 
-
+    globalvars.G.clear()
     
    # globalvars.broadcast = 0
    # globalvars.copies_delivered = 0

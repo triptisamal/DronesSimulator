@@ -414,12 +414,12 @@ def initiate_source_destination():
     print("source:",globalvars.focus1_key)
     print("destination:",globalvars.focus2_key)
     
-    calc_local_density()
-    globalvars.G.clear()
    # del(globalvars.G)
-    sys.exit()
     #Initiating petal parameters for the first time
     initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
+    #calc_local_density()
+    globalvars.G.clear()
+    sys.exit()
     find_points_inside_ellipsoid()
 
 def get_displacement(current_time):
@@ -473,45 +473,64 @@ def local_nodes(location,source,r):
     r_sq = r*r
     if sol <= r_sq:
         return 1 #inside
-    else:
-        return 
-
-def edge_exists(s,p):
-    print(s)
-    print(p)
-    #TODO
-#     for s, nbrs in G.adjacency():
-#        for t, data in nbrs.items():
-#            line += str(t) + delimiter
-#        yield line[: -len(delimiter)]
-#
-    return 1
+    return 0 
 
 def calc_local_density():
 
 
     radius = 0
+    s = globalvars.focus1_key
+    
+    edg = []
+    for e in globalvars.G.edges:
+        edg.append(e)
 
-    while radius <=10:
+
+    print("total number of edges:",len(edg))
+    #print(edg)
+    #print(globalvars.G.edges)
+    #print(edg)
+    while radius <=20:
         total_connections = 0
         total_potential_connections = 0
+        total_ellip_circ = 0
         inside = 0
+        inside_ellipsoid = 0
         for i in range(globalvars.number_of_nodes):
+
             inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],radius)
             if inside:
                 total_potential_connections +=1
-                if edge_exists(globalvars.packet['sLoc'],globalvars.node[i]['loc']):
+                point = (s,i)
+                #point1 = (i,s)
+           #     print("point:",point)
+                #print("point1:",point1)
+                #if point in edg or point1 in edg:
+                if point in edg:# or point1 in edg:
                     total_connections += 1
+
+                #check if this point i is inside the ellipsoid
+                inside_ellipsoid = insideOrNot(globalvars.node[i]['loc'])
+                if inside_ellipsoid == 1:
+                    total_ellip_circ +=1
         radius +=1
 
         original_stdout = sys.stdout
-        total_nodes_inside = "total_nodes_inside.txt" 
-        total_connections_inside = "total_connection_inside.txt" 
+        total_nodes_inside = "total_nodes_inside_with_%f.txt" % (globalvars.e) 
+        total_connections_inside = "total_connection_inside_with_%f.txt" % (globalvars.e) 
+        total_nodes_both = "total_nodes_both_%f.txt" % (globalvars.e) 
         local_density = "local_density.txt" 
         with open(total_nodes_inside,'a') as f:
             sys.stdout = f
             print(total_potential_connections)
 
+        with open(total_connections_inside,'a') as f1:
+            sys.stdout = f1
+            print(total_connections)
+        
+        with open(total_nodes_both,'a') as f2:
+            sys.stdout = f2
+            print(total_ellip_circ)
     
         #with open(petal_dest,'a') as f1:
         #    sys.stdout = f1
@@ -519,8 +538,10 @@ def calc_local_density():
 
         sys.stdout = original_stdout
        
-        if total_potential_connections >= 1:
-            local_density = total_connections/total_potential_connections
+       # if total_potential_connections >= 1:
+       #     local_density = total_connections/total_potential_connections
+       # for e in globalvars.G.edges:
+       #     print(e)
     
     #return local_density
 
@@ -593,8 +614,8 @@ def initiate_petal_parameters(choice):
 
 
 
-    density_source = calc_local_density()
-    print("Local density:",density_source)
+    calc_local_density()
+    #print("Local density:",density_source)
 
 
 
@@ -734,7 +755,9 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                  continue
              #if dist >= 2: #if distance is more than 50 feet = 2
              if dist >= 3.46: #twice long diagonal
+             #if dist >= 5.19: #thrice long diagonal
                  pass
+             #elif dist < 1: #if distance is less than 10 feet = 10/25; 1 = 25 feet
              elif dist < 0.4: #if distance is less than 10 feet = 10/25; 1 = 25 feet
                  globalvars.G.add_edge(u, v)
                  counter += 1
@@ -745,11 +768,13 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                      globalvars.G.add_edge(u, v)
                      counter += 1
         pickle.dump(globalvars.G, open('graph.pickle','wb'))
+        print("counter=",counter)
 
 
 
     if globalvars.adjlist == 1:
         globalvars.G = pickle.load(open('graph.pickle', 'rb'))
+
        # file = open('network_1.txt', 'r')
        # lines = []
        # lines = file.readlines()
@@ -764,16 +789,15 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
        #     del(edgelist) #added this because of memory leak; edgelist had older numbers than the ones read from file
        # file.close()
 
-        print("AFTER READING FILE")
-        for n, nbrdict in globalvars.G.adjacency():
-            print((n,nbrdict))	
+      #  print("AFTER READING FILE")
+      #  for n, nbrdict in globalvars.G.adjacency():
+      #      print((n,nbrdict))	
 	
 	
 
     
     #globalvars.G.remove_nodes_from(to_del)
 
-    print("counter=",counter)
 #Temporary code for sanity check
   #  found = 0
   #  for u, v in combinations(globalvars.G, 2):
