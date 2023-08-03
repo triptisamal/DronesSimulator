@@ -103,3 +103,4 @@ def init():
     packet_reached_dest = 0
     s=0
     d=0
+    G=()

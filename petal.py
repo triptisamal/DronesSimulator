@@ -339,12 +339,9 @@ def initiate_source_destination():
 
     ret = 0
     
-    print("SOURCE AND DESTINATION")
-    print("------------------------")
     print("protocol: ",globalvars.protocol);
     all_position_keys = []
     all_position_keys = list(globalvars.pos.keys())
-    print(all_position_keys)
 
     if globalvars.sd_random == 1:
         globalvars.focus1_key = np.random.choice(all_position_keys)
@@ -419,6 +416,7 @@ def initiate_source_destination():
     initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
     #calc_local_density()
     globalvars.G.clear()
+    del(globalvars.G)
     sys.exit()
     find_points_inside_ellipsoid()
 
@@ -457,7 +455,7 @@ def calculate_current_dest(current_time,old_loc):
 #
 
 
-
+#choose midpoint/centre point of lattice to sanity check
 def local_nodes(location,source,r):
     #extract the exact x,y,z coordinates
     
@@ -490,8 +488,9 @@ def calc_local_density():
     #print(edg)
     #print(globalvars.G.edges)
     #print(edg)
-    while radius <=20:
+    while radius <=15:
         total_connections = 0
+        total_connections_both = 0
         total_potential_connections = 0
         total_ellip_circ = 0
         inside = 0
@@ -502,23 +501,23 @@ def calc_local_density():
             if inside:
                 total_potential_connections +=1
                 point = (s,i)
-                #point1 = (i,s)
-           #     print("point:",point)
-                #print("point1:",point1)
-                #if point in edg or point1 in edg:
-                if point in edg:# or point1 in edg:
+                if point in edg:
                     total_connections += 1
 
                 #check if this point i is inside the ellipsoid
                 inside_ellipsoid = insideOrNot(globalvars.node[i]['loc'])
                 if inside_ellipsoid == 1:
                     total_ellip_circ +=1
+                    point2 = (s,i)
+                    if point2 in edg:
+                        total_connections_both += 1
         radius +=1
 
         original_stdout = sys.stdout
-        total_nodes_inside = "total_nodes_inside_with_%f.txt" % (globalvars.e) 
-        total_connections_inside = "total_connection_inside_with_%f.txt" % (globalvars.e) 
+        total_nodes_inside = "total_nodes_inside_sphere.txt"  
+        total_connections_inside = "total_connection_inside_sphere.txt" 
         total_nodes_both = "total_nodes_both_%f.txt" % (globalvars.e) 
+        total_connections_both = "total_connection_both_%f.txt" % (globalvars.e) 
         local_density = "local_density.txt" 
         with open(total_nodes_inside,'a') as f:
             sys.stdout = f
@@ -532,9 +531,9 @@ def calc_local_density():
             sys.stdout = f2
             print(total_ellip_circ)
     
-        #with open(petal_dest,'a') as f1:
-        #    sys.stdout = f1
-        #    print(dest)
+        with open(total_connections_both,'a') as f3:
+            sys.stdout = f3
+            print(total_connections_both)
 
         sys.stdout = original_stdout
        
@@ -724,8 +723,9 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     position = {i: (node_loc[i]['x'], node_loc[i]['y'], node_loc[i]['z']) for i in range(n_nodes)}
     
     # Create random 3D network
+    globalvars.G = nx.Graph()
     globalvars.G = nx.random_geometric_graph(n_nodes, radius, pos=position)
-    
+ 
     
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
     counter = 0
@@ -757,12 +757,11 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
              if dist >= 3.46: #twice long diagonal
              #if dist >= 5.19: #thrice long diagonal
                  pass
-             #elif dist < 1: #if distance is less than 10 feet = 10/25; 1 = 25 feet
-             elif dist < 0.4: #if distance is less than 10 feet = 10/25; 1 = 25 feet
+             elif dist < 0.8: #if distance is less than 20 feet = 20/25; 1 = 25 feet
                  globalvars.G.add_edge(u, v)
                  counter += 1
              else:
-                 p = 1 - ((dist - 0.4)/3.06)
+                 p = 1 - ((dist - 0.8)/2.66)
                  q = random.uniform(0,1)
                  if q <= p:
                      globalvars.G.add_edge(u, v)
@@ -911,7 +910,7 @@ def create_drones_network():
 
    
     #update number of nodes
-    globalvars.number_of_nodes = len(globalvars.G.nodes())
+    globalvars.number_of_nodes = len(G.nodes())
     #make adj list correct (both directions) 
     print("ADJACENCY LIST")
     print("----------------")
