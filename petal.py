@@ -752,7 +752,7 @@ def initiate_petal_parameters(choice):
         rho_e = get_experienced_density(globalvars.focus1_key)
         rho_d = get_threshold_density()
 
-        if rho_e > rho_d:
+        if rho_e < rho_d:
             while True:
                 old_height = globalvars.height
                 globalvars.height = increase_height(globalvars.height)
