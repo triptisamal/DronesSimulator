@@ -126,7 +126,11 @@ def node_handler(node_id, action,e):
     if action == "START_BACKOFF":
    
         #check if the node is inside petal or not
-        inside = insideOrNot(loc)
+        ##check which type of petal for this simulation run
+        if globalvars.cylinder == 1:
+            inside = insideCylinderOrNot(loc)
+        else:
+            inside = insideOrNot(loc)
         if inside == 1:
 
            # x.append(loc[0])
@@ -309,7 +313,8 @@ def node_handler(node_id, action,e):
             
             
             #petal is updated with new destination but old source
-            initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
+            if cylinder == 0:
+                initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
 
 
             
@@ -440,7 +445,7 @@ def main():
     '''Simulation engine'''
     
     #parse arguments
-    if len(sys.argv) < 8:
+    if len(sys.argv) < 7:
         print("Usage: simulator_drone.py <protocol number> <number of nodes> <eccentricity> <topology> <zone> <mobility model> <iteration>")
         print("Protocol numbers:")
         print("Flooding: 0")
@@ -452,7 +457,7 @@ def main():
         print("Single Zone: 0")
         print("Multi zone: 1")
         print("Last but one argument: 0 or 1 for globalvars.sd_random")
-        print("Last generate new network or read adj list: 0 or 1 for globalvars.adjlist")
+       # print("Last generate new network or read adj list: 0 or 1 for globalvars.adjlist")
         sys.exit();
     
     globalvars.init()
@@ -470,10 +475,11 @@ def main():
     else:
         print("Some nodes moving with the same velocity") 
     globalvars.sd_random = int(sys.argv[8])    
-    globalvars.adjlist = int(sys.argv[9])    
+    globalvars.cylinder = int(sys.argv[9])    
+   # globalvars.adjlist = int(sys.argv[9])    
     create_drones_network()
 
-    find_network_density()
+    #find_network_density()
     initiate_source_destination()
    # sys.exit()
    
@@ -501,76 +507,86 @@ def main():
     #define data structure for state for the packet id for each node
     globalvars.state_vector = [{'pid':0, 'node_id':i, 'packet_seen':0,'transmitted':0,'receive_count':0,'received_from_location':[],'time_of_update':0} for i in range(globalvars.number_of_nodes)]
     print("Packet data structure = ",globalvars.state_vector)
-
-    node_handler(src,"INITIATE_TRANSMISSION",0)
-    print("\nEVENT QUEUE:\n")
-    print("-----------------")
-    print(*globalvars.event_queue,sep="\n")
     
-    while globalvars.event_queue:
-        item = globalvars.event_queue.pop(0)
-        print("\nEvent occuring: ",item)
-        process_event(item)
+
+
+    while True:
+        node_handler(src,"INITIATE_TRANSMISSION",0)
         print("\nEVENT QUEUE:\n")
         print("-----------------")
         print(*globalvars.event_queue,sep="\n")
+        
+        while globalvars.event_queue:
+            item = globalvars.event_queue.pop(0)
+            print("\nEvent occuring: ",item)
+            process_event(item)
+            print("\nEVENT QUEUE:\n")
+            print("-----------------")
+            print(*globalvars.event_queue,sep="\n")
 
-    print("Total number of nodes = ",globalvars.number_of_nodes)
-    print("Total number of broadcasts = ",globalvars.broadcast)
-    print("Copy Delivery Ratio = ",globalvars.copies_delivered)
-    print("Total delay = ",globalvars.delay, "seconds (", (globalvars.delay/60), " minutes)")
-    sddistance = globalvars.sourcedestdistance
-    
-    if globalvars.packet_reached_dest == 1:
-        print("YAY: Distance between source and destination (in cartesian)= ",sddistance)
-        original_stdout = sys.stdout
-    
-        if globalvars.protocol == 1:
-            petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-         #   petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-            petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-            petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-            with open(petal_numberofbcast,'a') as f:
-                sys.stdout = f
-                if globalvars.broadcast != 0:
-                    print(globalvars.broadcast,",")
-            with open(petal_copies,'a') as f1:
-                sys.stdout = f1
-                if globalvars.broadcast != 0:
-                    print(globalvars.copies_delivered,",")
-            with open(petal_sourcedestdistance,'a') as f2:
-                sys.stdout = f2
-                dis = globalvars.sourcedestdistance
-                print(dis,",")
-        #with open(petal_numberinsidepetal,'a') as f3:
-        #   sys.stdout = f3
-        #   print(globalvars.insidectr,",")
-            petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-            with open(petal_delay,'a') as f4:
-                sys.stdout = f4
-                print(globalvars.delay,",")
-            write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
-        sys.stdout = original_stdout
-    
-
-
-        if globalvars.protocol == 0:
-            petal_numberofnodes = "flood_numberofnodes_%d.c" % (int(sys.argv[2]))
-            flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
-            flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
-            with open(flood_numberofbcast,'a') as f:
-                sys.stdout = f
-                if globalvars.broadcast != 0:
-                    print(globalvars.broadcast,",")
-            with open(flood_copies,'a') as f1:
-                sys.stdout = f1
-                print(globalvars.copies_delivered,",")
-            with open(petal_numberofnodes,'a') as f2:
-                sys.stdout = f2
-                print(globalvars.number_of_nodes)
-            write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+        print("Total number of nodes = ",globalvars.number_of_nodes)
+        print("Total number of broadcasts = ",globalvars.broadcast)
+        #print("Copy Delivery Ratio = ",globalvars.copies_delivered)
+        #print("Total delay = ",globalvars.delay, "seconds (", (globalvars.delay/60), " minutes)")
+        sddistance = globalvars.sourcedestdistance
+        
+        if globalvars.packet_reached_dest == 1:
+            print("Distance between source and destination (in cartesian)= ",sddistance)
+            print("PACKET SUCCESSFULLY DELIVERED")
+            original_stdout = sys.stdout
+        
+            if globalvars.protocol == 1:
+                petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+             #   petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+                petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+                petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+                with open(petal_numberofbcast,'a') as f:
+                    sys.stdout = f
+                    if globalvars.broadcast != 0:
+                        print(globalvars.broadcast,",")
+                with open(petal_copies,'a') as f1:
+                    sys.stdout = f1
+                    if globalvars.broadcast != 0:
+                        print(globalvars.copies_delivered,",")
+                with open(petal_sourcedestdistance,'a') as f2:
+                    sys.stdout = f2
+                    dis = globalvars.sourcedestdistance
+                    print(dis,",")
+            #with open(petal_numberinsidepetal,'a') as f3:
+            #   sys.stdout = f3
+            #   print(globalvars.insidectr,",")
+                petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+                with open(petal_delay,'a') as f4:
+                    sys.stdout = f4
+                    print(globalvars.delay,",")
+                write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
             sys.stdout = original_stdout
-            print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
+        
+
+
+            if globalvars.protocol == 0:
+                petal_numberofnodes = "flood_numberofnodes_%d.c" % (int(sys.argv[2]))
+                flood_numberofbcast = "flood_numberofbcast_%d.c" % (int(sys.argv[2]))
+                flood_copies = "flood_copies_%d.c" % (int(sys.argv[2]))
+                with open(flood_numberofbcast,'a') as f:
+                    sys.stdout = f
+                    if globalvars.broadcast != 0:
+                        print(globalvars.broadcast,",")
+                with open(flood_copies,'a') as f1:
+                    sys.stdout = f1
+                    print(globalvars.copies_delivered,",")
+                with open(petal_numberofnodes,'a') as f2:
+                    sys.stdout = f2
+                    print(globalvars.number_of_nodes)
+                write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+                sys.stdout = original_stdout
+                print("final writing",globalvars.s,globalvars.d,globalvars.protocol)
+
+            break
+
+        if globalvars.packet_reached_dest == 0:
+            print("PACKET NOT DELIVERED; Adjusting petal width")
+            globalvars.increase_width = 1##use this to increase W_p
 
     globalvars.G.clear()
     

@@ -48,6 +48,13 @@ def init():
     global packet_reached_dest
     global s
     global d
+    global cylinder
+    global W_p
+    global increase_width
+    global increase_height
+    global height
+    global cc1
+    global cc2
     
     pos = []
     e = 0.9
@@ -104,3 +111,10 @@ def init():
     s=0
     d=0
     G=()
+    cylinder=0
+    W_p=0
+    increase_width=0
+    increase_height=0.1
+    height=0
+    cc1=(0,0,0)
+    cc2=(0,0,0)

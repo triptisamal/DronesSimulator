@@ -9,9 +9,28 @@ echo "3. Check petal vs flooding"
 echo "4. Static"
 echo "5. Packet copies"
 echo "6. Density"
+echo "7. Cylinder petal"
 read testnumber
 
+if [ "$testnumber" -eq "7" ]
+then
+	echo "TEST NUMBER IS 7"
 
+	##Static
+	echo '0' > velocity_for_all
+	c=1
+	while [ "$c" -le "1" ]
+	do
+		python3 simulator_drone.py 1 216 0.1 0 0 0 $c 1 1 
+		#python3 simulator_drone.py petal numderofnodes ecc lattice singlezone nodesstatic itr sd_randomcylinder 
+		#python3 simulator_drone.py argv1 argv2 argv3 argv4 argv5 argv6 $c argv8 argv9 >out_$c
+		c=$(( c+1 ))
+	done
+
+#	mv network_*.txt density/
+#	mv *.c density/
+#	mv out_* density/
+fi
 
 if [ "$testnumber" -eq "6" ]
 then
@@ -22,7 +41,8 @@ then
 	c=1
 	while [ "$c" -le "1" ]
 	do
-		python3 simulator_drone.py 1 125 0.1 0 0 0 $c 0 1 
+		python3 simulator_drone.py 1 512 0.1 0 0 0 $c 0 
+		#python3 simulator_drone.py petal numderofnodes ecc lattice singlezone nodesstatic itr sd_random 
 		#python3 simulator_drone.py 1 512 0.4 1 0 0 $c 0 1 >out_$c
 		#python3 simulator_drone.py argv1 argv2 argv3 argv4 argv5 argv6 $c argv8 argv9 >out_$c
 		c=$(( c+1 ))

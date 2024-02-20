@@ -164,8 +164,6 @@ def calculate_backoff(location):
     
     
 
-        print(proj_of_dtv_on_dsv)
-    print(ds_v)
     #backoff time proportional to the distance from destination
     if proj_valid:
         proj = magnitude(proj_of_dtv_on_dsv)
@@ -182,9 +180,9 @@ def calculate_backoff(location):
         print("globalvars.packet['tUB1'] * proj:",globalvars.packet['tUB1'] * proj)
         
     #backoff time proportional to the distance from source-destination line
-    print("mag dt_v sq: ",(magnitude(dt_v))**2)
+    #print("mag dt_v sq: ",(magnitude(dt_v))**2)
     #print("mag : proj_of_dtv_on_dsv sq",(magnitude(proj_of_dtv_on_dsv))**2)
-    print("mag : proj_of_dtv_on_dsv sq",(proj)**2)
+  #  print("mag : proj_of_dtv_on_dsv sq",(proj)**2)
     #orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (magnitude(proj_of_dtv_on_dsv))**2)
     orthogonal_dist = math.sqrt((magnitude(dt_v))**2 - (proj)**2)
     print("orth dist: ",orthogonal_dist)
@@ -246,6 +244,84 @@ def compare_distance_to_destination(centroid,mylocation,destlocation):
         return 0
 
 
+def insideCylinderOrNot(location):
+
+
+    #Assuming the cylinder is defined by (p1,p2,r), check that the point q is inside the cylinder
+    #p1 is cap1 centre, p2 is cap2 centre, r is radius given by W_p/2 
+
+    #(vec_q - vec_p1).(vec_p2-vec_p1) >= 0
+    #(vec_q - vec_p2).(vec_p2-vec_p1) <= 0
+    ##if the above two cases are true, then point lies between the planes of the two circular facets of the cylinder
+
+
+    condition1 = 0
+    condition2 = 0
+    #extract the exact x,y,z coordinates
+    
+    x = location[0]
+    y = location[1]
+    z = location[2]
+
+
+    ##calculate the perpendicular distance of (x,y,z) = orthogonal_dist (in 2D) from sd line
+   
+    t = (x,y,z) #t is the node whose distance is calculated
+
+    #ds is the directional vector of line joining points d (destination) and s (source)
+    #calculated by subtracting dest coordinates from source coordinates 
+    ds = tuple(map(lambda i, j: i - j, globalvars.packet['sLoc'], globalvars.packet['dLoc'] ))
+    
+    #st is the directional vector of line joining s (source) and t 
+    st = tuple(map(lambda i, j: i - j, t, globalvars.packet['sLoc']))
+ 
+
+    #finding projection of vector st on ds
+    st_v = np.array([st[0],st[1],st[2]])
+    ds_v = np.array([ds[0],ds[1],ds[2]])
+
+    # finding norm of the vector ds_v
+    numerator = np.dot(st_v, ds_v)
+    denominator = np.dot(ds_v, ds_v)
+    
+    # Apply the formula for projecting a vector onto another vector
+    # find dot product using np.dot()
+    
+    if denominator:
+        proj_of_stv_on_dsv = np.multiply((numerator/denominator),ds_v)
+        proj_valid = 1
+    
+    if proj_valid:
+        proj = magnitude(proj_of_stv_on_dsv)
+    else:
+        proj = 0
+
+    orthogonal_dist = math.sqrt((magnitude(st_v))**2 - (proj)**2)
+
+    
+    ##check-1: Lies inside the curved surface of the cylinder
+    if orthogonal_dist <= globalvars.W_p/2: 
+        #(W_p is the petal width) 
+        condition1 = 1
+        #then could be inside, continue to check-2
+    else:
+        return 0 
+
+
+    ##check-2: Lies between the planes of the two circular facets of the cylinder
+    
+    t_v = np.array([x,y,z])
+    cc1_v = np.array([globalvars.cc1[0],globalvars.cc1[1],globalvars.cc1[2]])
+    cc2_v = np.array([globalvars.cc2[0],globalvars.cc2[1],globalvars.cc2[2]])
+    
+    if condition1 == 1:
+        w1 = np.dot((t_v-cc1_v),(cc2_v-cc1_v))
+        w2 = np.dot((t_v-cc2_v),(cc2_v-cc1_v))
+        if w1 >= 0 and w2 <= 0:
+            return 1
+        else :
+            return 0
+        
 
 
 def insideOrNot(location):
@@ -344,6 +420,7 @@ def initiate_source_destination():
     all_position_keys = list(globalvars.pos.keys())
 
     if globalvars.sd_random == 1:
+
         globalvars.focus1_key = np.random.choice(all_position_keys)
     
         while True:
@@ -353,10 +430,9 @@ def initiate_source_destination():
    
         globalvars.s = globalvars.focus1_key
         globalvars.d = globalvars.focus2_key
-        
+        ##in case we use cylinder petal, we will use s and d for all calculations
+
         #write_to_file(globalvars.focus1_key,globalvars.focus2_key)
-        #Temporary code: collect all s-d numbers, to check whether flooding works 
-        # for those where petal does not work
         original_stdout = sys.stdout
         petal_source = "petal_source_all500.txt" 
         with open(petal_source,'a') as f:
@@ -374,9 +450,6 @@ def initiate_source_destination():
 
         node_loc = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
         for key, value in globalvars.pos.items():
-       # xi.append(value[0])
-       # yi.append(value[1])
-       # zi.append(value[2])
             node_loc[key]['x'] = value[0]
             node_loc[key]['y'] = value[1]
             node_loc[key]['z'] = value[2]
@@ -415,10 +488,10 @@ def initiate_source_destination():
     #Initiating petal parameters for the first time
     initiate_petal_parameters(globalvars.PetalParamType.INIT.value)
     #calc_local_density()
-    globalvars.G.clear()
-    del(globalvars.G)
-    sys.exit()
-    find_points_inside_ellipsoid()
+    #globalvars.G.clear()
+    #del(globalvars.G)
+    #sys.exit()
+    #find_points_inside_ellipsoid()
 
 def get_displacement(current_time):
     vel = read_from_file(2)
@@ -468,7 +541,7 @@ def local_nodes(location,source,r):
     c = source[2]
 
     sol = (x-a)**2 + (y-b)**2 + (z-c)**2 # (x - a)² + (y - b)² + (z - c)²
-    r_sq = r*r
+    r_sq = math.ceil(r*r)
     if sol <= r_sq:
         return 1 #inside
     return 0 
@@ -488,30 +561,32 @@ def calc_local_density():
     #print(edg)
     #print(globalvars.G.edges)
     #print(edg)
-    while radius <=15:
-        total_connections = 0
-        total_connections_both = 0
-        total_potential_connections = 0
-        total_ellip_circ = 0
+    rad = [1,1.41,1.73,2,2.24,2.44,2.82,3,3.16,3.31,3.46,3.6,3.74,4]
+    itr=0
+    while itr <=13:
+        total_connections = -1
+        total_connections_both = -1
+        total_potential_connections = -1
+        total_ellip_circ = -1
         inside = 0
         inside_ellipsoid = 0
         for i in range(globalvars.number_of_nodes):
 
-            inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],radius)
+            inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],rad[itr])
             if inside:
                 total_potential_connections +=1
-                point = (s,i)
-                if point in edg:
-                    total_connections += 1
+                #point = (s,i)
+                #if point in edg:
+                #    total_connections += 1
 
-                #check if this point i is inside the ellipsoid
-                inside_ellipsoid = insideOrNot(globalvars.node[i]['loc'])
-                if inside_ellipsoid == 1:
-                    total_ellip_circ +=1
-                    point2 = (s,i)
-                    if point2 in edg:
-                        total_connections_both += 1
-        radius +=1
+                ##check if this point i is inside the ellipsoid
+                #inside_ellipsoid = insideOrNot(globalvars.node[i]['loc'])
+                #if inside_ellipsoid == 1:
+                #    total_ellip_circ +=1
+                #    point2 = (s,i)
+                #    if point2 in edg:
+                #        total_connections_both += 1
+        itr +=1
 
         original_stdout = sys.stdout
         total_nodes_inside = "total_nodes_inside_sphere.txt"  
@@ -546,18 +621,63 @@ def calc_local_density():
 
 
        
+def nodes_in_volume_of_interest(focus1_key):
+
+    #nodes in volume of interest V are the nodes inside the unit sphere with source at the centre that are also in 
+    # the petal
+
+    total_nodes = 0
+
+    for i in range(globalvars.number_of_nodes):
+        if i!=focus1_key:
+            inside_unit_sphere = local_nodes(globalvars,node[i]['loc'],globalvars.packet['sLoc'],1)
+            if inside_unit_sphere:
+                inside_petal = insideCylinderOrNot(globalvars,node[i]['loc'])
+                if inside_petal:
+                    total_nodes += 1
+
+    return total_nodes
+    
 
 
+
+
+def get_experienced_density(source):
+
+    total_connections = 0
+    edg = []
+    for e in globalvars.G.edges:
+        edg.append(e)
+
+
+    for i in range(globalvars.number_of_nodes):
+        inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],1)
+        if inside:
+            point = (source,i)
+            if point in edg:
+                total_connections += 1
+
+  
+    return total_connections
+
+def get_threshold_density():
+    return 6;
+
+def increase_height(h):
+    return h+0.1
 
 def initiate_petal_parameters(choice):
 
     print("PETAL PARAMETERS")
     print("----------------")
-    print("DURING init")
-    print("focus1=",globalvars.focus1_key)
-    print("focus2=",globalvars.focus2_key)
-    print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
-    print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
+
+    if choice == 1:
+        print("At the start:")
+    print("Source key=",globalvars.focus1_key)
+    print("Destination key=",globalvars.focus2_key)
+
+    print("Coordinates of source: (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
+    print("Coordinates of destination: (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
     
     #At the start of algorithm
     if choice == globalvars.PetalParamType.INIT.value:
@@ -568,6 +688,19 @@ def initiate_petal_parameters(choice):
         focaldist = math.sqrt(ff)
         globalvars.sourcedestdistance = focaldist
 
+        if globalvars.cylinder == 1:
+            globalvars.height = globalvars.sourcedestdistance
+        
+            ds = tuple(map(lambda i, j: i - j, globalvars.packet['sLoc'], globalvars.packet['dLoc'] ))
+            mag_ds = magnitude(ds)
+
+            if mag_ds != globalvars.height:
+                print("something is wrong")
+                sys.exit()
+            
+            #cylinder cap centres cc1, cc2 are source and destination
+            globalvars.cc2 = globalvars.packet['dLoc']
+            globalvars.cc1 = globalvars.packet['sLoc']
 
     #when the destination is updated, in case of diverged petal algorithm
 
@@ -582,38 +715,60 @@ def initiate_petal_parameters(choice):
         ff = (globalvars.packet['dLoc'][0]-globalvars.save_old_source[0])**2 +(globalvars.packet['dLoc'][1]-globalvars.save_old_source[1])**2+(globalvars.packet['dLoc'][2]-globalvars.save_old_source[2])**2
         focaldist = math.sqrt(ff)
 
-    print("Distance between two foci =", focaldist)
-
-    
-    print("Linear eccentricity =", focaldist/2)
-
-    print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
-
-
-    #globalvars.e = calculate_eccentricity(globalvars.focus1_key)
-    print("Eccentricity:",globalvars.e)
-    #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
-    globalvars.a = focaldist/(2*globalvars.e)
-
-    ma = globalvars.a+globalvars.a
-    globalvars.c = globalvars.a * math.sqrt(1-(globalvars.e)**2)
-    print("Semi major axis, a = ", globalvars.a)
-    print("major axis, a+a = ", ma)
-    print("Semi minor axis, b = ", globalvars.b)
-    print("minor axis, b = ", globalvars.b+ globalvars.b)
-    if focaldist > ma:
-        print("incorrect")
-    #globalvars.c = random.uniform(globalvars.b,globalvars.c)
-    # a = b = c: sphere
-    # a = b > c: oblate spheroid.
-    # a = b < c: prolate spheroid
-    # a > b > c: scalene spheroid or triaxial.
-    globalvars.b = globalvars.c
-    print("c = ",globalvars.c)
+   
+    if globalvars.cylinder == 0:
+        print("Distance between two foci =", focaldist)
+        print("Linear eccentricity =", focaldist/2)
+        print("Centre of ellipsoid = (", (globalvars.pos[globalvars.focus1_key][0]+globalvars.pos[globalvars.focus2_key][0])/2,",",(globalvars.pos[globalvars.focus1_key][1]+globalvars.pos[globalvars.focus2_key][1])/2,",",(globalvars.pos[globalvars.focus1_key][2]+globalvars.pos[globalvars.focus2_key][2])/2,")")
+        #globalvars.e = calculate_eccentricity(globalvars.focus1_key)
+        print("Eccentricity:",globalvars.e)
+        #is that of the ellipse formed by a section containing both the longest and the shortest axes (one of which will be the polar axis (x axis))
+        globalvars.a = focaldist/(2*globalvars.e)
+        ma = globalvars.a+globalvars.a
+        globalvars.c = globalvars.a * math.sqrt(1-(globalvars.e)**2)
+        print("Semi major axis, a = ", globalvars.a)
+        print("major axis, a+a = ", ma)
+        print("Semi minor axis, b = ", globalvars.b)
+        print("minor axis, b = ", globalvars.b+ globalvars.b)
+        if focaldist > ma:
+            print("incorrect")
+        #globalvars.c = random.uniform(globalvars.b,globalvars.c)
+        # a = b = c: sphere
+        # a = b > c: oblate spheroid.
+        # a = b < c: prolate spheroid
+        # a > b > c: scalene spheroid or triaxial.
+        globalvars.b = globalvars.c
+        print("c = ",globalvars.c)
 
 
 
-    calc_local_density()
+    if globalvars.cylinder == 1:
+        if globalvars.increase_width == 0:
+            globalvars.W_p = 2 #petal width initialize
+        else:
+            globalvars.W_p += globalvars.increase_width
+        
+
+        rho_e = get_experienced_density(globalvars.focus1_key)
+        rho_d = get_threshold_density()
+
+        if rho_e > rho_d:
+            while True:
+                old_height = globalvars.height
+                globalvars.height = increase_height(globalvars.height)
+                #update cc1
+                globalvars.cc1[0] = globalvars.cc2[0] - ((globalvars.height*(globalvars.cc2[0]-globalvars.cc1[0]))/old_height)
+                globalvars.cc1[1] = globalvars.cc2[1] - ((globalvars.height*(globalvars.cc2[1]-globalvars.cc1[1]))/old_height)
+                globalvars.cc1[2] = globalvars.cc2[2] - ((globalvars.height*(globalvars.cc2[2]-globalvars.cc1[2]))/old_height)
+
+                N = nodes_in_volume_of_interest(focus1_key)
+                if N <= rho_d:
+                    break
+
+
+         
+        #Temp code: DO NOT DELETE YET
+        #calc_local_density()
     #print("Local density:",density_source)
 
 
@@ -813,8 +968,9 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     #print("removed nodes = ",to_del)
     print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     globalvars.number_of_nodes = globalvars.G.number_of_nodes()
+    print("NUMBER OF NODES = ",len(globalvars.G.nodes))
     
-    #print("Position of all nodes after: ",globalvars.pos) 
+    print("Position of all nodes after: ",globalvars.pos) 
 
     return globalvars.G
 
