@@ -710,15 +710,17 @@ def initiate_petal_parameters(choice):
     #when the destination is updated, in case of diverged petal algorithm
 
     if choice == globalvars.PetalParamType.MODIFY.value:
-        print("updating s and d")
-        #New petal will have the current location of destination, 
-        #but old location of source
-        print("globalvars.packet['sLoc']: ",globalvars.packet['sLoc'])
-        print("Destination: ",globalvars.packet['dLoc'])
-        print("Source: ",globalvars.save_old_source)
+        #only for ellipsoid
+        if globalvars.cylinder == 0:
+            print("updating s and d")
+            #New petal will have the current location of destination, 
+            #but old location of source
+            print("globalvars.packet['sLoc']: ",globalvars.packet['sLoc'])
+            print("Destination: ",globalvars.packet['dLoc'])
+            print("Source: ",globalvars.save_old_source)
 
-        ff = (globalvars.packet['dLoc'][0]-globalvars.save_old_source[0])**2 +(globalvars.packet['dLoc'][1]-globalvars.save_old_source[1])**2+(globalvars.packet['dLoc'][2]-globalvars.save_old_source[2])**2
-        focaldist = math.sqrt(ff)
+            ff = (globalvars.packet['dLoc'][0]-globalvars.save_old_source[0])**2 +(globalvars.packet['dLoc'][1]-globalvars.save_old_source[1])**2+(globalvars.packet['dLoc'][2]-globalvars.save_old_source[2])**2
+            focaldist = math.sqrt(ff)
 
    
     if globalvars.cylinder == 0:
@@ -902,45 +904,44 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
             #fully connected
             #globalvars.G.add_edge(u, v)
 
-            #sparsely connected
+           # #sparsely connected
              dist = distance_between_nodes(u,v,node_loc)
-             if dist == 1:#sparesly connected
-                globalvars.G.add_edge(u, v)
+           #  if dist == 1:#sparsely connected
+           #     globalvars.G.add_edge(u, v)
 
              
             #probabilistic disk model
-             ##if dist <= 0.4: #if distance is less than 10 feet
-             #if dist < 0.2: #if distance is less than 10 feet
-             #    print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
-             #    #to_del.append(u)
-             #    #to_del.append(v)
-             #    z_v = avoid_collision(u,v,node_loc)
-             #    #update position of v
-             #    
-             #    index = int(v)
-             #    posi = list(globalvars.pos[v])
-             #    posi[2] = z_v
-             #    globalvars.pos[v] = tuple(posi)
-             #    
-             #    #also update node_loc
-             #    node_loc[v]['z'] = z_v
-             #    #distance is 10 feet
-             #    globalvars.G.add_edge(u, v)
-             #    counter += 1
-             #    continue
-             ##if dist >= 2: #if distance is more than 50 feet = 2
-             #if dist >= 3.46: #twice long diagonal
-             ##if dist >= 5.19: #thrice long diagonal
-             #    pass
-             #elif dist < 0.8: #if distance is less than 20 feet = 20/25; 1 = 25 feet
-             #    globalvars.G.add_edge(u, v)
-             #    counter += 1
-             #else:
-             #    p = 1 - ((dist - 0.8)/2.66)
-             #    q = random.uniform(0,1)
-             #    if q <= p:
-             #        globalvars.G.add_edge(u, v)
-             #        counter += 1
+             #if dist <= 0.4: #if distance is less than 10 feet
+             if dist < 0.2: #if distance is less than 10 feet
+                 print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+                 #to_del.append(u)
+                 #to_del.append(v)
+                 z_v = avoid_collision(u,v,node_loc)
+                 #update position of v
+                 
+                 index = int(v)
+                 posi = list(globalvars.pos[v])
+                 posi[2] = z_v
+                 globalvars.pos[v] = tuple(posi)
+                 
+                 #also update node_loc
+                 node_loc[v]['z'] = z_v
+                 #distance is 10 feet
+                 globalvars.G.add_edge(u, v)
+                 counter += 1
+                 continue
+             #if dist >= 2: #if distance is more than 50 feet = 2
+             if dist >= 2: 
+                 pass
+             elif dist < 0.2: #if distance is less than 20 feet = 20/25; 1 = 25 feet
+                 globalvars.G.add_edge(u, v)
+                 counter += 1
+             else:
+                 p = 1 - ((dist - 0.2)/1.8)
+                 q = random.uniform(0,1)
+                 if q <= p:
+                     globalvars.G.add_edge(u, v)
+                     counter += 1
         pickle.dump(globalvars.G, open('graph.pickle','wb'))
         print("counter=",counter)
 
@@ -1136,7 +1137,10 @@ def create_drones_network():
 
 
 
-             #START:Take a snapshot, not printing all, only printing one
+   
+
+def take_a_snapshot_of_network():
+              #START:Take a snapshot, not printing all, only printing one
     xi = []
     yi = []
     zi = []
@@ -1149,10 +1153,15 @@ def create_drones_network():
     fig = plt.figure()
     for key, value in globalvars.pos.items():
 
-        if (value[0] == globalvars.pos[globalvars.focus1_key][0] and value[1] == globalvars.pos[globalvars.focus1_key][1] and value[2] == globalvars.pos[globalvars.focus1_key][2]) or (value[0] == globalvars.pos[globalvars.focus2_key][0] and value[1] == globalvars.pos[globalvars.focus2_key][1] and value[2] == globalvars.pos[globalvars.focus2_key][2]):
+        if key == globalvars.s or key == globalvars.d:
             xii.append(value[0])
             yii.append(value[1])
             zii.append(value[2])
+            print("TEST: ",xii,yii,zii)
+            print("TEST: ",globalvars.pos[globalvars.focus1_key][0],globalvars.pos[globalvars.focus1_key][0],globalvars.pos[globalvars.focus1_key][0])
+            print(value, key)
+            print(globalvars.focus1_key, globalvars.focus2_key)
+            print(globalvars.s, globalvars.d)
      #   elif (value[0] == 1 and value[1] == 2 and value[2] == 2) or  (value[0] == 2 and value[1] == 2 and value[2] == 3) or  (value[0] == 2 and value[1] == 2 and value[2] == 1)  or  (value[0] == 2 and value[1] == 3 and value[2] == 2) or (value[0] == 3 and value[1] == 2 and value[2] == 2) or (value[0] == 2 and value[1] == 1 and value[2] == 2):
      #       xiii.append(value[0])
      #       yiii.append(value[1])
@@ -1168,14 +1177,14 @@ def create_drones_network():
     ax.scatter(xi,yi,zi, color='black')
     ax.scatter(xii,yii,zii, color='red')
    # ax.scatter(xiii,yiii,ziii, color='blue')
-    for i,j in enumerate(G.edges()):
+    for i,j in enumerate(globalvars.G.edges()):
 
         x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
         y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
         z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
     
     # Plot the connecting lines
-     #   ax.plot(x, y, z, c='black', alpha=0.5)
+        ax.plot(x, y, z, c='black', alpha=0.5)
    
 
    
@@ -1217,11 +1226,10 @@ def create_drones_network():
  
     plt.savefig(figname)
     plt.close('all')
-             #END: Take a snapshot, not printing all, only printing one
+
+   #END: Take a snapshot, not printing all, only printing one
 
 def find_points_inside_ellipsoid():
-
-    
     for i in range(0,globalvars.number_of_nodes):
         inside = insideOrNot(globalvars.node[i]['loc'])
         if inside == 1:

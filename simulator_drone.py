@@ -13,6 +13,13 @@ x1 = []
 y1 = []
 z1 = []
 
+def petal_covers_entire_network():
+
+    if globalvars.W_p >= globalvars.number_of_nodes**(1/3):
+        return 1
+    
+    return 0
+
 def update_packet(action,loc):
     '''This method is for creating a packet. It is called by each source node'''
 
@@ -74,8 +81,8 @@ def node_handler(node_id, action,e):
         #pid is incremented the only after a source creates a packet
         #in the next round of petal routing, this new pid will be used
         globalvars.pid += 1
-       # if globalvars.packet_reached_dest == 0:
-        #    globalvars.broadcast += 1
+        if globalvars.packet_reached_dest == 0:
+            globalvars.broadcast += 1
         event_id = "BROADCAST_%03d" % (globalvars.idn)
         globalvars.idn += 1
 
@@ -483,6 +490,7 @@ def main():
 
     #find_network_density()
     initiate_source_destination()
+    take_a_snapshot_of_network()
    # sys.exit()
    
 
@@ -533,18 +541,18 @@ def main():
         #print("Copy Delivery Ratio = ",globalvars.copies_delivered)
         #print("Total delay = ",globalvars.delay, "seconds (", (globalvars.delay/60), " minutes)")
         sddistance = globalvars.sourcedestdistance
-        
+        petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+    #   petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
+        petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        petal_width = "petal_width_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+ 
         if globalvars.packet_reached_dest == 1:
             print("Distance between source and destination (in cartesian)= ",sddistance)
             print("PACKET SUCCESSFULLY DELIVERED")
             original_stdout = sys.stdout
         
             if globalvars.protocol == 1:
-                petal_sourcedestdistance = "petal_sourcedestdistance_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-             #   petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
-                petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-                petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-                petal_width = "petal_width_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
                 with open(petal_numberofbcast,'a') as f:
                     sys.stdout = f
                     if globalvars.broadcast != 0:
@@ -561,13 +569,6 @@ def main():
                     sys.stdout = f2
                     dis = globalvars.sourcedestdistance
                     print(dis,",")
-            #with open(petal_numberinsidepetal,'a') as f3:
-            #   sys.stdout = f3
-            #   print(globalvars.insidectr,",")
-                petal_delay = "petal_delay_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
-                with open(petal_delay,'a') as f4:
-                    sys.stdout = f4
-                    print(globalvars.delay,",")
                 write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
             sys.stdout = original_stdout
         
@@ -596,12 +597,30 @@ def main():
         if globalvars.packet_reached_dest == 0:
             print("PACKET NOT DELIVERED; Adjusting petal width")
             globalvars.increase_width = 1##use this to increase W_p
+            if petal_covers_entire_network():
+                original_stdout = sys.stdout
+                print("No route to destination")
+                with open(petal_numberofbcast,'a') as f:
+                    sys.stdout = f
+                    print(0,",")
+                with open(petal_copies,'a') as f1:
+                    sys.stdout = f1
+                    print(0,",")
+                with open(petal_width,'a') as f5:
+                    sys.stdout = f5
+                    print(globalvars.W_p,",",globalvars.height,",")
+                with open(petal_sourcedestdistance,'a') as f2:
+                    sys.stdout = f2
+                    dis = globalvars.sourcedestdistance
+                    print(dis,",")
+                write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+                sys.stdout = original_stdout
+
+                break
+            initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
 
     globalvars.G.clear()
     
-   # globalvars.broadcast = 0
-   # globalvars.copies_delivered = 0
-   # running +=1 
 
 
 if __name__=="__main__":
