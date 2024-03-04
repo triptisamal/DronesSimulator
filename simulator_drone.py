@@ -234,6 +234,8 @@ def node_handler(node_id, action,e):
 
                                 if globalvars.packet_reached_dest == 0:
                                     globalvars.broadcast += 1
+                                else:
+                                    print("pkt reached dest:",globalvars.packet_reached_dest)
 
 
                                 event_id = "BROADCAST_%03d" % (globalvars.idn)
@@ -399,10 +401,10 @@ def process_event(e):
 
             #find destination id
             print("Destination Location globalvars.packet['dLoc']:", globalvars.packet['dLoc'])
-            print("Printing location of all nodes at time ",globalvars.now)
+           # print("Printing location of all nodes at time ",globalvars.now)
             dest_id = 9999
             for j in range(globalvars.number_of_nodes):
-                print(globalvars.node[j]['loc'])
+              #  print(globalvars.node[j]['loc'])
                 if globalvars.node[j]['loc'] == globalvars.packet['dLoc']:
                     dest_id = globalvars.node[j]['nodeID']
                     break
@@ -511,6 +513,8 @@ def main():
 
 
     while True:
+        globalvars.copies_delivered=0
+        globalvars.broadcast=0
         node_handler(src,"INITIATE_TRANSMISSION",0)
         print("\nEVENT QUEUE:\n")
         print("-----------------")
@@ -540,6 +544,7 @@ def main():
              #   petal_numberinsidepetal = "petal_numberinsidepetal_%d_%f.c" % (int(sys.argv[2]),globalvars.e)
                 petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
                 petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+                petal_width = "petal_width_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
                 with open(petal_numberofbcast,'a') as f:
                     sys.stdout = f
                     if globalvars.broadcast != 0:
@@ -548,6 +553,10 @@ def main():
                     sys.stdout = f1
                     if globalvars.broadcast != 0:
                         print(globalvars.copies_delivered,",")
+                with open(petal_width,'a') as f5:
+                    sys.stdout = f5
+                    if globalvars.broadcast != 0:
+                        print(globalvars.W_p,",",globalvars.height,",")
                 with open(petal_sourcedestdistance,'a') as f2:
                     sys.stdout = f2
                     dis = globalvars.sourcedestdistance

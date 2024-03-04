@@ -103,15 +103,6 @@ def source_destination_distance():
 
     #globalvars.sourcedestdistance = focaldist
 
-    print("DEBUG START")
-    print("focus2 = (",globalvars.pos[globalvars.focus2_key][0],globalvars.pos[globalvars.focus2_key][1],globalvars.pos[globalvars.focus2_key][2],")")
-    print("focus1 = (",globalvars.pos[globalvars.focus1_key][0],globalvars.pos[globalvars.focus1_key][1],globalvars.pos[globalvars.focus1_key][2],")")
-    print("Coordinates of focus 1 (source): (", globalvars.pos[globalvars.focus1_key][0],",", globalvars.pos[globalvars.focus1_key][1],",", globalvars.pos[globalvars.focus1_key][2],")" )
-    print("Coordinates of focus 2 (destination): (", globalvars.pos[globalvars.focus2_key][0],",", globalvars.pos[globalvars.focus2_key][1],",", globalvars.pos[globalvars.focus2_key][2],")" )
-    print("focus1=",globalvars.focus1_key)
-    print("focus2=",globalvars.focus2_key)
-   # print("s d distance",globalvars.sourcedestdistance)
-    print("DEBUG END")
     
     return focaldist
 
@@ -521,12 +512,6 @@ def calculate_current_dest(current_time,old_loc):
     return new_loc
 
 
-#def calculate_eccentricity(source):
-#
-#
-#    #eq of circle
-#
-
 
 #choose midpoint/centre point of lattice to sanity check
 def local_nodes(location,source,r):
@@ -630,9 +615,9 @@ def nodes_in_volume_of_interest(focus1_key):
 
     for i in range(globalvars.number_of_nodes):
         if i!=focus1_key:
-            inside_unit_sphere = local_nodes(globalvars,node[i]['loc'],globalvars.packet['sLoc'],1)
+            inside_unit_sphere = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],1)
             if inside_unit_sphere:
-                inside_petal = insideCylinderOrNot(globalvars,node[i]['loc'])
+                inside_petal = insideCylinderOrNot(globalvars.node[i]['loc'])
                 if inside_petal:
                     total_nodes += 1
 
@@ -663,8 +648,31 @@ def get_experienced_density(source):
 def get_threshold_density():
     return 6;
 
-def increase_height(h):
-    return h+0.1
+def decrease_height(h):
+    return h-0.1
+
+def getUnitVector(vector):
+    unit_vector = vector / np.linalg.norm(vector)
+    return unit_vector
+
+def get_point_on_line(start, end, distance):
+        z = end[2]-start[2]
+        y = end[1]-start[1]
+        x = end[0]-start[0]
+        arr = []
+        arr.append(x)
+        arr.append(y)
+        arr.append(z)
+        vector = np.array(arr)
+        unitVector = getUnitVector(vector)
+
+        ar=[]
+        ar.append(end[0])
+        ar.append(end[1])
+        ar.append(end[2])
+        vec = np.array(ar)
+        result = np.subtract(vec,unitVector*distance)
+        return result
 
 def initiate_petal_parameters(choice):
 
@@ -689,14 +697,11 @@ def initiate_petal_parameters(choice):
         globalvars.sourcedestdistance = focaldist
 
         if globalvars.cylinder == 1:
-            globalvars.height = globalvars.sourcedestdistance
+            globalvars.height = globalvars.sourcedestdistance+1
         
             ds = tuple(map(lambda i, j: i - j, globalvars.packet['sLoc'], globalvars.packet['dLoc'] ))
             mag_ds = magnitude(ds)
 
-            if mag_ds != globalvars.height:
-                print("something is wrong")
-                sys.exit()
             
             #cylinder cap centres cc1, cc2 are source and destination
             globalvars.cc2 = globalvars.packet['dLoc']
@@ -752,16 +757,24 @@ def initiate_petal_parameters(choice):
         rho_e = get_experienced_density(globalvars.focus1_key)
         rho_d = get_threshold_density()
 
-        if rho_e < rho_d:
+        if rho_e > rho_d:
             while True:
                 old_height = globalvars.height
-                globalvars.height = increase_height(globalvars.height)
+                globalvars.height = decrease_height(globalvars.height)
                 #update cc1
-                globalvars.cc1[0] = globalvars.cc2[0] - ((globalvars.height*(globalvars.cc2[0]-globalvars.cc1[0]))/old_height)
-                globalvars.cc1[1] = globalvars.cc2[1] - ((globalvars.height*(globalvars.cc2[1]-globalvars.cc1[1]))/old_height)
-                globalvars.cc1[2] = globalvars.cc2[2] - ((globalvars.height*(globalvars.cc2[2]-globalvars.cc1[2]))/old_height)
 
-                N = nodes_in_volume_of_interest(focus1_key)
+               # print("height:",globalvars.height)
+                point = get_point_on_line(globalvars.cc1,globalvars.cc2,globalvars.height) 
+                globalvars.cc1 = tuple(point)
+               # print(globalvars.cc1)
+                
+             #   a = globalvars.cc2[0] - ((globalvars.height*(globalvars.cc2[0]-globalvars.cc1[0]))/old_height)
+             #   b = globalvars.cc2[1] - ((globalvars.height*(globalvars.cc2[1]-globalvars.cc1[1]))/old_height)
+             #   c = globalvars.cc2[2] - ((globalvars.height*(globalvars.cc2[2]-globalvars.cc1[2]))/old_height)
+             #   globalvars.cc1 = (a,b,c)
+             #   print(globalvars.cc1)
+                N = nodes_in_volume_of_interest(globalvars.focus1_key)
+                print("N=",N)
                 if N <= rho_d:
                     break
 
@@ -886,41 +899,48 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     counter = 0
     if globalvars.adjlist == 0:
         for u, v in combinations(globalvars.G, 2):
-        
+            #fully connected
+            #globalvars.G.add_edge(u, v)
+
+            #sparsely connected
              dist = distance_between_nodes(u,v,node_loc)
-             #print(dist)
-             #if dist <= 0.4: #if distance is less than 10 feet
-             if dist < 0.2: #if distance is less than 10 feet
-                 print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
-                 #to_del.append(u)
-                 #to_del.append(v)
-                 z_v = avoid_collision(u,v,node_loc)
-                 #update position of v
-                 
-                 index = int(v)
-                 posi = list(globalvars.pos[v])
-                 posi[2] = z_v
-                 globalvars.pos[v] = tuple(posi)
-                 
-                 #also update node_loc
-                 node_loc[v]['z'] = z_v
-                 #distance is 10 feet
-                 globalvars.G.add_edge(u, v)
-                 counter += 1
-                 continue
-             #if dist >= 2: #if distance is more than 50 feet = 2
-             if dist >= 3.46: #twice long diagonal
-             #if dist >= 5.19: #thrice long diagonal
-                 pass
-             elif dist < 0.8: #if distance is less than 20 feet = 20/25; 1 = 25 feet
-                 globalvars.G.add_edge(u, v)
-                 counter += 1
-             else:
-                 p = 1 - ((dist - 0.8)/2.66)
-                 q = random.uniform(0,1)
-                 if q <= p:
-                     globalvars.G.add_edge(u, v)
-                     counter += 1
+             if dist == 1:#sparesly connected
+                globalvars.G.add_edge(u, v)
+
+             
+            #probabilistic disk model
+             ##if dist <= 0.4: #if distance is less than 10 feet
+             #if dist < 0.2: #if distance is less than 10 feet
+             #    print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+             #    #to_del.append(u)
+             #    #to_del.append(v)
+             #    z_v = avoid_collision(u,v,node_loc)
+             #    #update position of v
+             #    
+             #    index = int(v)
+             #    posi = list(globalvars.pos[v])
+             #    posi[2] = z_v
+             #    globalvars.pos[v] = tuple(posi)
+             #    
+             #    #also update node_loc
+             #    node_loc[v]['z'] = z_v
+             #    #distance is 10 feet
+             #    globalvars.G.add_edge(u, v)
+             #    counter += 1
+             #    continue
+             ##if dist >= 2: #if distance is more than 50 feet = 2
+             #if dist >= 3.46: #twice long diagonal
+             ##if dist >= 5.19: #thrice long diagonal
+             #    pass
+             #elif dist < 0.8: #if distance is less than 20 feet = 20/25; 1 = 25 feet
+             #    globalvars.G.add_edge(u, v)
+             #    counter += 1
+             #else:
+             #    p = 1 - ((dist - 0.8)/2.66)
+             #    q = random.uniform(0,1)
+             #    if q <= p:
+             #        globalvars.G.add_edge(u, v)
+             #        counter += 1
         pickle.dump(globalvars.G, open('graph.pickle','wb'))
         print("counter=",counter)
 
@@ -1031,23 +1051,57 @@ def network_plot_3D(G, angle, save):
     # Hide the axes
     ax.set_axis_off()
 
-   #  if save is not False:
-   #      plt.savefig("C:\scratch\\data\"+str(angle).zfill(3)+".png")
-   #      plt.close('all')
-   #  else:
-   #       plt.show()
-  #  plt.show()
-    plt.clf()
+  #   if save is not False:
+  #       plt.savefig("./net".png")
+  #       plt.close('all')
+  #   else:
+  #       plt.show()
+    #plt.show()
+   # plt.clf()
     
     return
 
+def data_for_cylinder_along_z(center_x,center_y,radius,height_z):
+    z = np.linspace(0, height_z, 50)
+    theta = np.linspace(0, 2*np.pi, 50)
+    theta_grid, z_grid=np.meshgrid(theta, z)
+    x_grid = radius*np.cos(theta_grid) + center_x
+    y_grid = radius*np.sin(theta_grid) + center_y
+    return x_grid,y_grid,z_grid
 
+def plot_3D_cylinder(radius, height, elevation=0, resolution=100, color='r', x_center = 0, y_center = 0):
+    
+    #fig=plt.figure()
+    #ax = Axes3D(fig, azim=30, elev=30)
+
+    x = np.linspace(x_center-radius, x_center+radius, resolution)
+    z = np.linspace(elevation, elevation+height, resolution)
+    X, Z = np.meshgrid(x, z)
+
+    Y = np.sqrt(radius**2 - (X - x_center)**2) + y_center # Pythagorean theorem
+
+    ax.plot_surface(X, Y, Z, linewidth=0, color=color)
+    ax.plot_surface(X, (2*y_center-Y), Z, linewidth=0, color=color)
+
+    floor = Circle((x_center, y_center), radius, color=color)
+    ax.add_patch(floor)
+    art3d.pathpatch_2d_to_3d(floor, z=elevation, zdir="z")
+
+    ceiling = Circle((x_center, y_center), radius, color=color)
+    ax.add_patch(ceiling)
+    art3d.pathpatch_2d_to_3d(ceiling, z=elevation+height, zdir="z")
+
+    ax.set_xlabel('x-axis')
+    ax.set_ylabel('y-axis')
+    ax.set_zlabel('z-axis')
+
+   # plt.show()
 def create_drones_network():
 
 
     n = globalvars.number_of_nodes  
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
-    #network_plot_3D(G,0, save=False)
+   # network_plot_3D(G,0, save=True)
     
     
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
@@ -1082,34 +1136,88 @@ def create_drones_network():
 
 
 
- #            #Take a snapshot, not printing all, only printing one
- #   xi = []
- #   yi = []
- #   zi = []
- #   fig = plt.figure()
- #   for key, value in globalvars.pos.items():
- #       xi.append(value[0])
- #       yi.append(value[1])
- #       zi.append(value[2])
- #       
+             #START:Take a snapshot, not printing all, only printing one
+    xi = []
+    yi = []
+    zi = []
+    xii = []
+    yii = []
+    zii = []
+    xiii = []
+    yiii = []
+    ziii = []
+    fig = plt.figure()
+    for key, value in globalvars.pos.items():
 
- #                           
- #   ax = plt.axes(projection='3d')
- #   ax.scatter(xi,yi,zi, color='blue')
- #   for i,j in enumerate(G.edges()):
+        if (value[0] == globalvars.pos[globalvars.focus1_key][0] and value[1] == globalvars.pos[globalvars.focus1_key][1] and value[2] == globalvars.pos[globalvars.focus1_key][2]) or (value[0] == globalvars.pos[globalvars.focus2_key][0] and value[1] == globalvars.pos[globalvars.focus2_key][1] and value[2] == globalvars.pos[globalvars.focus2_key][2]):
+            xii.append(value[0])
+            yii.append(value[1])
+            zii.append(value[2])
+     #   elif (value[0] == 1 and value[1] == 2 and value[2] == 2) or  (value[0] == 2 and value[1] == 2 and value[2] == 3) or  (value[0] == 2 and value[1] == 2 and value[2] == 1)  or  (value[0] == 2 and value[1] == 3 and value[2] == 2) or (value[0] == 3 and value[1] == 2 and value[2] == 2) or (value[0] == 2 and value[1] == 1 and value[2] == 2):
+     #       xiii.append(value[0])
+     #       yiii.append(value[1])
+     #       ziii.append(value[2])
+        else:       
+            xi.append(value[0])
+            yi.append(value[1])
+            zi.append(value[2])
+        
 
- #       x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
- #       y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
- #       z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
- #   
- #   # Plot the connecting lines
- #       ax.plot(x, y, z, c='black', alpha=0.5)
+                            
+    ax = plt.axes(projection='3d')
+    ax.scatter(xi,yi,zi, color='black')
+    ax.scatter(xii,yii,zii, color='red')
+   # ax.scatter(xiii,yiii,ziii, color='blue')
+    for i,j in enumerate(G.edges()):
+
+        x = np.array((globalvars.pos[j[0]][0], globalvars.pos[j[1]][0]))
+        y = np.array((globalvars.pos[j[0]][1], globalvars.pos[j[1]][1]))
+        z = np.array((globalvars.pos[j[0]][2], globalvars.pos[j[1]][2]))
     
+    # Plot the connecting lines
+     #   ax.plot(x, y, z, c='black', alpha=0.5)
+   
 
- #   figname = "snap_network%d.png" % (globalvars.iteration)
- #
- #   plt.savefig(figname)
- #   plt.close('all')
+   
+#22d cylinder
+  #  Xc,Yc,Zc = data_for_cylinder_along_z(2,2,1,3)
+   # ax.plot_surface(Xc, Yc, Zc, alpha=0.5)
+
+    #plt.show()
+
+
+  #  #3d cylinder
+  #  from matplotlib.patches import Circle
+  #  import mpl_toolkits.mplot3d.art3d as art3d
+  #  radius = 1
+  #  height = 3
+  #  elevation = 5
+  #  resolution = 100
+  #  color = 'r'
+  #  x_center = 2
+  #  y_center = 2
+  #  x = np.linspace(x_center-radius, x_center+radius, resolution)
+  #  z = np.linspace(elevation, elevation+height, resolution)
+  #  X, Z = np.meshgrid(x, z)
+
+  #  Y = np.sqrt(radius**2 - (X - x_center)**2) + y_center # Pythagorean theorem
+
+  #  ax.plot_surface(X, Y, Z, linewidth=0, color=color)
+  #  ax.plot_surface(X, (2*y_center-Y), Z, linewidth=0, color=color)
+
+  #  floor = Circle((x_center, y_center), radius, color=color)
+  #  ax.add_patch(floor)
+  #  art3d.pathpatch_2d_to_3d(floor, z=elevation, zdir="z")
+
+  #  ceiling = Circle((x_center, y_center), radius, color=color)
+  #  ax.add_patch(ceiling)
+  #  art3d.pathpatch_2d_to_3d(ceiling, z=elevation+height, zdir="z")
+    
+    figname = "snap_network%d.png" % (globalvars.iteration)
+ 
+    plt.savefig(figname)
+    plt.close('all')
+             #END: Take a snapshot, not printing all, only printing one
 
 def find_points_inside_ellipsoid():
 
