@@ -1,4 +1,4 @@
-rm total_connection_inside.txt
-rm total_nodes_inside.txt
-rm total_nodes_both*.txt
+rm *.c
 rm out_*
+rm snap*
+rm network_*.txt
