@@ -485,12 +485,14 @@ def main():
         print("Some nodes moving with the same velocity") 
     globalvars.sd_random = int(sys.argv[8])    
     globalvars.cylinder = int(sys.argv[9])    
+       
    # globalvars.adjlist = int(sys.argv[9])    
     create_drones_network()
 
     #find_network_density()
     initiate_source_destination()
     take_a_snapshot_of_network()
+
    # sys.exit()
    
 
@@ -564,7 +566,7 @@ def main():
                 with open(petal_width,'a') as f5:
                     sys.stdout = f5
                     if globalvars.broadcast != 0:
-                        print(globalvars.W_p,",",globalvars.height,",")
+                        print(globalvars.W_p,",",globalvars.height,",",get_experienced_density(globalvars.focus1_key))
                 with open(petal_sourcedestdistance,'a') as f2:
                     sys.stdout = f2
                     dis = globalvars.sourcedestdistance
@@ -608,7 +610,7 @@ def main():
                     print(0,",")
                 with open(petal_width,'a') as f5:
                     sys.stdout = f5
-                    print(globalvars.W_p,",",globalvars.height,",")
+                    print(globalvars.W_p,",",globalvars.height,",",get_experienced_density(globalvars.focus1_key))
                 with open(petal_sourcedestdistance,'a') as f2:
                     sys.stdout = f2
                     dis = globalvars.sourcedestdistance

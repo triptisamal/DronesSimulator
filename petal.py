@@ -622,10 +622,6 @@ def nodes_in_volume_of_interest(focus1_key):
                     total_nodes += 1
 
     return total_nodes
-    
-
-
-
 
 def get_experienced_density(source):
 
@@ -636,7 +632,7 @@ def get_experienced_density(source):
 
 
     for i in range(globalvars.number_of_nodes):
-        inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],1)
+        inside = local_nodes(globalvars.node[i]['loc'],globalvars.packet['sLoc'],1)#change radius to increase density
         if inside:
             point = (source,i)
             if point in edg:
@@ -757,6 +753,7 @@ def initiate_petal_parameters(choice):
         
 
         rho_e = get_experienced_density(globalvars.focus1_key)
+        print("Experience density for source=",rho_e)
         rho_d = get_threshold_density()
 
         if rho_e > rho_d:
@@ -896,7 +893,8 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
     globalvars.G = nx.Graph()
     globalvars.G = nx.random_geometric_graph(n_nodes, radius, pos=position)
  
-    
+   # print("default edges")
+   # print(globalvars.G.edges())
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
     counter = 0
     if globalvars.adjlist == 0:
@@ -1097,6 +1095,7 @@ def plot_3D_cylinder(radius, height, elevation=0, resolution=100, color='r', x_c
     ax.set_zlabel('z-axis')
 
    # plt.show()
+
 def create_drones_network():
 
 
@@ -1136,8 +1135,6 @@ def create_drones_network():
     sys.stdout = original_stdout
 
 
-
-   
 
 def take_a_snapshot_of_network():
               #START:Take a snapshot, not printing all, only printing one
