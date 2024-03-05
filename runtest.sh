@@ -18,11 +18,24 @@ then
 
 	##Static
 	echo '0' > velocity_for_all
+
+	echo "Choose experiment: 1 2 3"
+	read exp
+
+
 	c=1
-	while [ "$c" -le "1" ]
+	while [ "$c" -le "10" ]
 	do
-		python3 simulator_drone.py 1 216 0.1 0 0 0 $c 1 1 
-		#python3 simulator_drone.py petal numderofnodes ecc lattice singlezone nodesstatic itr sd_randomcylinder 
+		if [ "$exp" -eq "2" ]
+		then
+			python3 simulator_drone.py 1 125 0.1 0 0 0 $c 0 1 $exp >out_$c #experiment2
+		elif [ "$exp" -eq "3" ] 
+		then
+			python3 simulator_drone.py 1 125 0.1 1 0 0 $c 0 1 $exp >out_$c #experiment3 
+		else
+			python3 simulator_drone.py 1 125 0.1 0 0 0 $c 1 1 $exp >out_$c #experiment1
+		fi
+		#python3 simulator_drone.py petal numderofnodes ecc lattice singlezone nodesstatic itr sd_random cylinder 
 		#python3 simulator_drone.py argv1 argv2 argv3 argv4 argv5 argv6 $c argv8 argv9 >out_$c
 		c=$(( c+1 ))
 	done
