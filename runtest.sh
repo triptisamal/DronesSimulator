@@ -24,14 +24,21 @@ then
 
 
 	c=1
-	while [ "$c" -le "10" ]
+	while [ "$c" -le "100" ]
 	do
 		if [ "$exp" -eq "2" ]
 		then
 			python3 simulator_drone.py 1 125 0.1 0 0 0 $c 0 1 $exp >out_$c #experiment2
 		elif [ "$exp" -eq "3" ] 
 		then
-			python3 simulator_drone.py 1 125 0.1 1 0 0 $c 0 1 $exp >out_$c #experiment3 
+		#	python3 simulator_drone.py 1 125 0.1 1 0 0 $c 1 1 generate #experiment3 
+		#	python3 simulator_drone.py 1 125 0.1 1 0 0 $c 1 1 graph_125.pickle #experiment3 
+		#	python3 simulator_drone.py 1 216 0.1 1 0 0 $c 1 1 generate #experiment3 
+	#		python3 simulator_drone.py 1 216 0.1 1 0 0 $c 1 1 graph_216.pickle #experiment3 
+		#	python3 simulator_drone.py 1 343 0.1 1 0 0 $c 1 1 generate #experiment3 
+			python3 simulator_drone.py 1 343 0.1 1 0 0 $c 1 1 graph_343.pickle #experiment3 
+	#		python3 simulator_drone.py 1 512 0.1 1 0 0 $c 1 1 generate #experiment3 
+	#		python3 simulator_drone.py 1 512 0.1 1 0 0 $c 1 1 graph_512.pickle #experiment3 
 		else
 			python3 simulator_drone.py 1 125 0.1 0 0 0 $c 1 1 $exp >out_$c #experiment1
 		fi
