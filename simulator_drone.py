@@ -15,7 +15,7 @@ z1 = []
 
 def petal_covers_entire_network():
 
-    if globalvars.W_p >= globalvars.number_of_nodes**(1/3):
+    if globalvars.W_p > globalvars.number_of_nodes**(1/3):
         return 1
     
     return 0
@@ -486,7 +486,7 @@ def main():
     globalvars.sd_random = int(sys.argv[8])    
     globalvars.cylinder = int(sys.argv[9])    
        
-   # globalvars.adjlist = int(sys.argv[9])    
+    globalvars.adjlist = sys.argv[10]   
     create_drones_network()
 
     #find_network_density()
@@ -599,7 +599,8 @@ def main():
         if globalvars.packet_reached_dest == 0:
             print("PACKET NOT DELIVERED; Adjusting petal width")
             globalvars.increase_width = 1##use this to increase W_p
-            if petal_covers_entire_network():
+            ret = petal_covers_entire_network()
+            if ret == 1:
                 original_stdout = sys.stdout
                 print("No route to destination")
                 with open(petal_numberofbcast,'a') as f:

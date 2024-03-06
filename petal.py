@@ -897,7 +897,7 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
    # print(globalvars.G.edges())
     globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
     counter = 0
-    if globalvars.adjlist == 0:
+    if globalvars.adjlist == "generate":
         for u, v in combinations(globalvars.G, 2):
             #fully connected
             #globalvars.G.add_edge(u, v)
@@ -909,26 +909,24 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
 
              
             #probabilistic disk model
-             #if dist <= 0.4: #if distance is less than 10 feet
-             if dist < 0.2: #if distance is less than 10 feet
-                 print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
-                 #to_del.append(u)
-                 #to_del.append(v)
-                 z_v = avoid_collision(u,v,node_loc)
-                 #update position of v
-                 
-                 index = int(v)
-                 posi = list(globalvars.pos[v])
-                 posi[2] = z_v
-                 globalvars.pos[v] = tuple(posi)
-                 
-                 #also update node_loc
-                 node_loc[v]['z'] = z_v
-                 #distance is 10 feet
-                 globalvars.G.add_edge(u, v)
-                 counter += 1
-                 continue
-             #if dist >= 2: #if distance is more than 50 feet = 2
+         #    if dist < 0.2: #if distance is less than 10 feet
+         #        print("distance=",dist,"nodes",u,v,"are too close; adjusting positions")
+         #        #to_del.append(u)
+         #        #to_del.append(v)
+         #        z_v = avoid_collision(u,v,node_loc)
+         #        #update position of v
+         #        
+         #        index = int(v)
+         #        posi = list(globalvars.pos[v])
+         #        posi[2] = z_v
+         #        globalvars.pos[v] = tuple(posi)
+         #        
+         #        #also update node_loc
+         #        node_loc[v]['z'] = z_v
+         #        #distance is 10 feet
+         #        globalvars.G.add_edge(u, v)
+         #        counter += 1
+         #        continue
              if dist >= 2: 
                  pass
              elif dist < 0.2: #if distance is less than 20 feet = 20/25; 1 = 25 feet
@@ -940,13 +938,18 @@ def generate_random_3Dgraph(n_nodes, radius, seed=None):
                  if q <= p:
                      globalvars.G.add_edge(u, v)
                      counter += 1
-        pickle.dump(globalvars.G, open('graph.pickle','wb'))
+        name = "graph_%d.pickle" % (globalvars.iteration)
+
+        pickle.dump(globalvars.G, open(name,'wb'))
         print("counter=",counter)
 
 
 
-    if globalvars.adjlist == 1:
-        globalvars.G = pickle.load(open('graph.pickle', 'rb'))
+    if globalvars.adjlist != "generate":
+        globalvars.G = pickle.load(open(sys.argv[10], 'rb'))
+        globalvars.pos = nx.get_node_attributes(globalvars.G, 'pos')
+        #this will also rewrite the positions
+        #globalvars.G = pickle.load(open('graph.pickle', 'rb'))
 
        # file = open('network_1.txt', 'r')
        # lines = []
@@ -1096,12 +1099,29 @@ def plot_3D_cylinder(radius, height, elevation=0, resolution=100, color='r', x_c
 
    # plt.show()
 
-def create_drones_network():
 
+def read_adjacency_list_from_file():
+    from collections import defaultdict
+
+    with open(sys.argv[10]) as f:
+        lines = f.read().strip().split("\n")
+
+    d = defaultdict(list)
+
+    for line in lines:
+        ls = line.split(" ")
+        d[ls[0]] = ls[1:]
+
+    print(d)
+    sys.exit()
+    
+
+
+def create_drones_network():
 
     n = globalvars.number_of_nodes  
     G = generate_random_3Dgraph(n_nodes=n, radius=0.25, seed=1)
-   # network_plot_3D(G,0, save=True)
+    # network_plot_3D(G,0, save=True)
     
     
     x_nodes = [globalvars.pos[key][0] for key in globalvars.pos.keys()]
@@ -1118,7 +1138,7 @@ def create_drones_network():
     print("----------------")
     #print(globalvars.node)
 
-   
+    
     #update number of nodes
     globalvars.number_of_nodes = len(G.nodes())
     #make adj list correct (both directions) 
@@ -1133,7 +1153,6 @@ def create_drones_network():
         for line in generate_adjlist_with_all_edges(globalvars.G,' '):
             print(line)
     sys.stdout = original_stdout
-
 
 
 def take_a_snapshot_of_network():
