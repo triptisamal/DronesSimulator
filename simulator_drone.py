@@ -302,7 +302,7 @@ def node_handler(node_id, action,e):
             #all locations are updated
             update_all_position(globalvars.now)
             print("All positions updated at time ",globalvars.now)
-            #TODO: check if all are maintaining minimum 
+            #check if all are maintaining minimum 
             node_location = [{'x':0, 'y':0, 'z':0} for i in range(0,globalvars.number_of_nodes+1)]
             for i in range(0,globalvars.number_of_nodes):
                 node_location[i]['x'] = globalvars.pos[i][0]
@@ -322,8 +322,8 @@ def node_handler(node_id, action,e):
             
             
             #petal is updated with new destination but old source
-            if cylinder == 0:
-                initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
+           # if cylinder == 0:
+            initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
 
 
             
@@ -470,23 +470,30 @@ def main():
         sys.exit();
     
     globalvars.init()
-    globalvars.protocol = int(sys.argv[1])
-    globalvars.number_of_nodes = int(sys.argv[2])
-    globalvars.e = float(sys.argv[3])
-    globalvars.topology = float(sys.argv[4])
-    globalvars.zone = float(sys.argv[5])
-    globalvars.iteration = int(sys.argv[7])
+
+
+    globalvars.protocol = int(sys.argv[1])    #petal = 1
+    globalvars.number_of_nodes = int(sys.argv[2]) #number of nodes
+    globalvars.e = float(sys.argv[3])            #eccentricity for ellipsoid
+    globalvars.topology = float(sys.argv[4])    #lattice 0 or perturbed 1
+    globalvars.zone = float(sys.argv[5])             #single 0 or multi 1
+    
     print("Number of nodes = ", globalvars.number_of_nodes)
+    
     if int(sys.argv[6]) == 0:
         print("Nodes are not moving")
     elif int(sys.argv[6]) == 1:
         print("All nodes moving with the same velocity")
     else:
         print("Some nodes moving with the same velocity") 
+    
+    globalvars.iteration = int(sys.argv[7])
     globalvars.sd_random = int(sys.argv[8])    
+   # print(sys.argv) 
+    print(sys.argv[10]) 
     globalvars.cylinder = int(sys.argv[9])    
-       
     globalvars.adjlist = sys.argv[10]   
+    print(globalvars.adjlist) 
     create_drones_network()
 
     #find_network_density()
@@ -548,6 +555,7 @@ def main():
         petal_numberofbcast = "petal_numberofbcast_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         petal_copies = "petal_copies_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
         petal_width = "petal_width_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
+        petal_density = "petal_density_%d_%f_%d.c" % (int(sys.argv[2]),globalvars.e,globalvars.zone)
  
         if globalvars.packet_reached_dest == 1:
             print("Distance between source and destination (in cartesian)= ",sddistance)
@@ -566,7 +574,11 @@ def main():
                 with open(petal_width,'a') as f5:
                     sys.stdout = f5
                     if globalvars.broadcast != 0:
-                        print(globalvars.W_p,",",globalvars.height,",",get_experienced_density(globalvars.focus1_key))
+                        print(globalvars.W_p,",")
+                with open(petal_density,'a') as f6:
+                    sys.stdout = f6
+                    if globalvars.broadcast != 0:
+                        print(get_experienced_density(globalvars.focus1_key),",")
                 with open(petal_sourcedestdistance,'a') as f2:
                     sys.stdout = f2
                     dis = globalvars.sourcedestdistance
@@ -603,21 +615,21 @@ def main():
             if ret == 1:
                 original_stdout = sys.stdout
                 print("No route to destination")
-                with open(petal_numberofbcast,'a') as f:
-                    sys.stdout = f
-                    print(0,",")
-                with open(petal_copies,'a') as f1:
-                    sys.stdout = f1
-                    print(0,",")
-                with open(petal_width,'a') as f5:
-                    sys.stdout = f5
-                    print(globalvars.W_p,",",globalvars.height,",",get_experienced_density(globalvars.focus1_key))
-                with open(petal_sourcedestdistance,'a') as f2:
-                    sys.stdout = f2
-                    dis = globalvars.sourcedestdistance
-                    print(dis,",")
-                write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
-                sys.stdout = original_stdout
+               # with open(petal_numberofbcast,'a') as f:
+               #     sys.stdout = f
+               #     print(0,",")
+               # with open(petal_copies,'a') as f1:
+               #     sys.stdout = f1
+               #     print(0,",")
+               # with open(petal_width,'a') as f5:
+               #     sys.stdout = f5
+               #     print(globalvars.W_p,",",globalvars.height,",",get_experienced_density(globalvars.focus1_key))
+               # with open(petal_sourcedestdistance,'a') as f2:
+               #     sys.stdout = f2
+               #     dis = globalvars.sourcedestdistance
+               #     print(dis,",")
+               # write_to_file(globalvars.s,globalvars.d,globalvars.protocol)
+               # sys.stdout = original_stdout
 
                 break
             initiate_petal_parameters(globalvars.PetalParamType.MODIFY.value)
